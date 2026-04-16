@@ -14,6 +14,14 @@ struct ItemListView: View {
                     SearchBar(text: $searchQuery)
                         .padding(.horizontal, 4)
 
+                    if spaceStore.spaces.isEmpty {
+                        Text("请先添加一个空间")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.top, 20)
+                    }
+
                     let filtered = SearchService.filter(items: itemStore.items, query: searchQuery)
 
                     ForEach(Category.allCases) { category in
@@ -34,15 +42,10 @@ struct ItemListView: View {
                             .font(.title3.weight(.semibold))
                             .foregroundColor(.white)
                             .frame(width: 40, height: 40)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color(hex: "#667eea"), Color(hex: "#764ba2")]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .background(AppColors.primaryGradient)
                             .clipShape(Circle())
                     }
+                    .disabled(spaceStore.spaces.isEmpty)
                 }
             }
             .sheet(isPresented: $showingAddItem) {

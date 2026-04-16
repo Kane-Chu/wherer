@@ -27,7 +27,7 @@ struct SpaceDetailView: View {
                                 .fill(Color(.systemGray5))
                                 .frame(width: 56, height: 56)
                                 .overlay(
-                                    Image(systemName: Category(rawValue: item.category ?? "")?.icon ?? "cube.box")
+                                    Image(systemName: item.wrappedCategory.icon)
                                         .foregroundColor(.gray)
                                 )
                         }

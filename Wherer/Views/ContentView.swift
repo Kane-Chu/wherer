@@ -27,6 +27,6 @@ struct ContentView: View {
                 .environmentObject(spaceStore)
                 .environmentObject(itemStore)
         }
-        .accentColor(Color(hex: "#667eea"))
+        .accentColor(AppColors.accent)
     }
 }

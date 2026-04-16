@@ -82,13 +82,7 @@ struct SpaceListView: View {
                             .font(.title3.weight(.semibold))
                             .foregroundColor(.white)
                             .frame(width: 40, height: 40)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color(hex: "#667eea"), Color(hex: "#764ba2")]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .background(AppColors.primaryGradient)
                             .clipShape(Circle())
                     }
                 }
