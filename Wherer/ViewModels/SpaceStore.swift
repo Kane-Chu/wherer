@@ -51,10 +51,10 @@ class SpaceStore: ObservableObject {
     private func seedDefaultSpacesIfNeeded() {
         guard spaces.isEmpty else { return }
         let defaults = [
-            ("卧室", "bed.double.fill", "#ffeaa7"),
-            ("书房", "book.fill", "#a8edea"),
-            ("客厅", "sofa.fill", "#d299c2"),
-            ("储物间", "archivebox.fill", "#89f7fe")
+            ("卧室", "bed.double.fill", ColorPreset.allPresets[0].startHex),
+            ("书房", "book.fill", ColorPreset.allPresets[1].startHex),
+            ("客厅", "sofa.fill", ColorPreset.allPresets[2].startHex),
+            ("储物间", "archivebox.fill", ColorPreset.allPresets[3].startHex)
         ]
         for (name, icon, color) in defaults {
             let space = Space(context: context)
