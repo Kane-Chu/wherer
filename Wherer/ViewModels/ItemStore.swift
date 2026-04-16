@@ -75,13 +75,18 @@ class ItemStore: ObservableObject {
         if let image = image {
             do {
                 let filename = try PhotoService.savePhoto(image, for: item.wrappedId)
-                if let oldFilename = item.photoFilename {
+                if let oldFilename = item.photoFilename, oldFilename != filename {
                     PhotoService.deletePhoto(filename: oldFilename)
                 }
                 item.photoFilename = filename
             } catch {
                 print("Failed to save photo: \(error)")
             }
+        } else if item.photoFilename != nil {
+            if let oldFilename = item.photoFilename {
+                PhotoService.deletePhoto(filename: oldFilename)
+            }
+            item.photoFilename = nil
         }
 
         saveContext()
