@@ -6,14 +6,14 @@ enum PhotoServiceError: Error {
 }
 
 struct PhotoService {
-    private static var photosDirectory: URL {
+    private static let photosDirectory: URL = {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let photos = documents.appendingPathComponent("Photos", isDirectory: true)
         if !FileManager.default.fileExists(atPath: photos.path) {
             try? FileManager.default.createDirectory(at: photos, withIntermediateDirectories: true)
         }
         return photos
-    }
+    }()
 
     static func savePhoto(_ image: UIImage, for itemID: UUID) throws -> String {
         guard let data = image.jpegData(compressionQuality: 0.85) else {
