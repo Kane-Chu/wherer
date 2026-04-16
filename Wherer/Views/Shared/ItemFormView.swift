@@ -15,6 +15,8 @@ struct ItemFormView: View {
     @State private var tags: String = ""
     @State private var selectedImage: UIImage?
     @State private var showingImagePicker = false
+    @State private var showingSourceSheet = false
+    @State private var pickerSourceType: UIImagePickerController.SourceType = .photoLibrary
 
     var body: some View {
         NavigationStack {
@@ -45,7 +47,7 @@ struct ItemFormView: View {
                                 }
                             )
                             .onTapGesture {
-                                showingImagePicker = true
+                                showingSourceSheet = true
                             }
                     }
                     .listRowInsets(EdgeInsets())
@@ -99,8 +101,19 @@ struct ItemFormView: View {
                     }
                 }
             }
+            .confirmationDialog("选择照片来源", isPresented: $showingSourceSheet, titleVisibility: .visible) {
+                Button("拍照") {
+                    pickerSourceType = .camera
+                    showingImagePicker = true
+                }
+                Button("从相册选择") {
+                    pickerSourceType = .photoLibrary
+                    showingImagePicker = true
+                }
+                Button("取消", role: .cancel) {}
+            }
             .sheet(isPresented: $showingImagePicker) {
-                PhotoPicker(image: $selectedImage, sourceType: .photoLibrary)
+                PhotoPicker(image: $selectedImage, sourceType: pickerSourceType)
             }
         }
     }
