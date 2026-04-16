@@ -17,6 +17,9 @@ struct ColorPresetPicker: View {
                             .stroke(Color.primary, lineWidth: 3)
                     }
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(preset.name)
+                .accessibilityAddTraits(preset.id == selected.id ? .isSelected : [])
                 .onTapGesture {
                     withAnimation(.spring()) {
                         selected = preset

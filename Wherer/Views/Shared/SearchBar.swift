@@ -15,6 +15,7 @@ struct SearchBar: View {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.gray)
                 }
+                .accessibilityLabel("清除")
             }
         }
         .padding(.vertical, 10)
