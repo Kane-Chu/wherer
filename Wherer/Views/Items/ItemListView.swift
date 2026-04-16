@@ -38,11 +38,14 @@ struct ItemListView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddItem = true }) {
-                        Image(systemName: "plus")
-                            .font(.title3.weight(.semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
-                            .background(Circle().fill(AppColors.primaryGradient))
+                        ZStack {
+                            Circle()
+                                .fill(AppColors.primaryGradient)
+                                .frame(width: 36, height: 36)
+                            Image(systemName: "plus")
+                                .font(.title3.weight(.semibold))
+                                .foregroundColor(.white)
+                        }
                     }
                     .disabled(spaceStore.spaces.isEmpty)
                 }

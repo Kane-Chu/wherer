@@ -208,6 +208,11 @@ struct ItemFormView: View {
                     category = item.wrappedCategory
                     tags = item.tags ?? ""
                     selectedImages = item.photoList.compactMap { PhotoService.loadPhoto(filename: $0.wrappedFilename) }
+                    if selectedImages.isEmpty, let filename = item.photoFilename {
+                        if let image = PhotoService.loadPhoto(filename: filename) {
+                            selectedImages = [image]
+                        }
+                    }
                     coverIndex = item.photoList.firstIndex { $0.wrappedIsCover } ?? 0
                 }
             }
