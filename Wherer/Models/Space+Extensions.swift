@@ -32,6 +32,6 @@ extension Space {
     }
 
     var colorPreset: ColorPreset? {
-        ColorPreset.allPresets.first { $0.startColor == Color(hex: wrappedColorHex) }
+        ColorPreset.allPresets.first { $0.startHex == wrappedColorHex }
     }
 }
