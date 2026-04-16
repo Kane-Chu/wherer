@@ -3,10 +3,6 @@ import SwiftUI
 struct SpaceCardView: View {
     let space: Space
 
-    private var preset: ColorPreset? {
-        ColorPreset.allPresets.first { space.wrappedColorHex == $0.startHex }
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Spacer()
@@ -24,10 +20,10 @@ struct SpaceCardView: View {
         .padding(16)
         .background(
             Group {
-                if let preset = preset {
-                    AnyView(preset.gradient)
+                if let preset = space.colorPreset {
+                    preset.gradient
                 } else {
-                    AnyView(Color(hex: space.wrappedColorHex))
+                    Color(hex: space.wrappedColorHex)
                 }
             }
         )

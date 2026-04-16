@@ -2,13 +2,15 @@ import SwiftUI
 
 struct SpaceDetailView: View {
     @EnvironmentObject var itemStore: ItemStore
+    @EnvironmentObject var spaceStore: SpaceStore
     let space: Space
     @State private var showingAddItem = false
     @State private var editingItem: Item?
 
     var body: some View {
+        let items = itemStore.items(for: space)
         List {
-            ForEach(itemStore.items(for: space)) { item in
+            ForEach(items) { item in
                 Button {
                     editingItem = item
                 } label: {
@@ -56,7 +58,6 @@ struct SpaceDetailView: View {
                 .buttonStyle(.plain)
             }
             .onDelete { indexSet in
-                let items = itemStore.items(for: space)
                 indexSet.forEach { itemStore.deleteItem(items[$0]) }
             }
         }
@@ -72,10 +73,12 @@ struct SpaceDetailView: View {
         .sheet(isPresented: $showingAddItem) {
             ItemFormView(space: space)
                 .environmentObject(itemStore)
+                .environmentObject(spaceStore)
         }
         .sheet(item: $editingItem) { item in
             ItemFormView(space: space, item: item)
                 .environmentObject(itemStore)
+                .environmentObject(spaceStore)
         }
     }
 }
