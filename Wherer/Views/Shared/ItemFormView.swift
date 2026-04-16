@@ -17,32 +17,33 @@ struct ItemFormView: View {
     @State private var coverIndex: Int = 0
     @State private var deletingIndex: Int?
     @State private var pickerImage: UIImage?
-    @State private var imageSource: ImageSource?
+    @State private var showingCamera = false
+    @State private var showingLibrary = false
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    VStack(spacing: 12) {
+                    VStack(spacing: 16) {
                         ZStack(alignment: .topTrailing) {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(Color(.systemGray6))
-                                .frame(height: 160)
+                                .frame(height: 180)
                                 .overlay(
                                     Group {
                                         if !selectedImages.isEmpty {
                                             Image(uiImage: selectedImages[coverIndex])
                                                 .resizable()
                                                 .scaledToFill()
-                                                .frame(height: 160)
+                                                .frame(height: 180)
                                                 .clipShape(RoundedRectangle(cornerRadius: 20))
                                         } else {
-                                            VStack(spacing: 8) {
+                                            VStack(spacing: 10) {
                                                 Image(systemName: "camera.fill")
-                                                    .font(.title2)
+                                                    .font(.system(size: 44, weight: .medium))
                                                     .foregroundColor(.secondary)
                                                 Text("点击拍照或从相册选择")
-                                                    .font(.subheadline)
+                                                    .font(.body.weight(.medium))
                                                     .foregroundColor(.secondary)
                                             }
                                         }
@@ -63,7 +64,7 @@ struct ItemFormView: View {
 
                         HStack(spacing: 16) {
                             Button {
-                                imageSource = ImageSource(sourceType: .camera)
+                                showingCamera = true
                             } label: {
                                 HStack(spacing: 6) {
                                     Image(systemName: "camera.fill")
@@ -78,7 +79,7 @@ struct ItemFormView: View {
                             .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
 
                             Button {
-                                imageSource = ImageSource(sourceType: .photoLibrary)
+                                showingLibrary = true
                             } label: {
                                 HStack(spacing: 6) {
                                     Image(systemName: "photo.fill")
@@ -95,7 +96,7 @@ struct ItemFormView: View {
                         if !selectedImages.isEmpty {
                             HStack(spacing: 12) {
                                 Button {
-                                    imageSource = ImageSource(sourceType: .camera)
+                                    showingCamera = true
                                 } label: {
                                     Image(systemName: "camera.fill")
                                         .font(.subheadline.weight(.semibold))
@@ -107,7 +108,7 @@ struct ItemFormView: View {
                                 .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
 
                                 Button {
-                                    imageSource = ImageSource(sourceType: .photoLibrary)
+                                    showingLibrary = true
                                 } label: {
                                     Image(systemName: "photo.fill")
                                         .font(.subheadline.weight(.semibold))
@@ -222,8 +223,12 @@ struct ItemFormView: View {
                     coverIndex = item.photoList.firstIndex { $0.wrappedIsCover } ?? 0
                 }
             }
-            .fullScreenCover(item: $imageSource) { source in
-                PhotoPicker(image: $pickerImage, sourceType: source.sourceType)
+            .fullScreenCover(isPresented: $showingCamera) {
+                PhotoPicker(image: $pickerImage, sourceType: .camera)
+                    .ignoresSafeArea()
+            }
+            .fullScreenCover(isPresented: $showingLibrary) {
+                PhotoPicker(image: $pickerImage, sourceType: .photoLibrary)
                     .ignoresSafeArea()
             }
             .onChange(of: pickerImage) { _, newImage in
@@ -234,9 +239,4 @@ struct ItemFormView: View {
             }
         }
     }
-}
-
-struct ImageSource: Identifiable {
-    let id = UUID()
-    let sourceType: UIImagePickerController.SourceType
 }
