@@ -15,7 +15,17 @@ struct PhotoPicker: UIViewControllerRepresentable {
         return picker
     }
 
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {
+        let target: UIImagePickerController.SourceType
+        if UIImagePickerController.isSourceTypeAvailable(sourceType) {
+            target = sourceType
+        } else {
+            target = .photoLibrary
+        }
+        if uiViewController.sourceType != target {
+            uiViewController.sourceType = target
+        }
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)

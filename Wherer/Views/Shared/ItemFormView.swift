@@ -14,8 +14,7 @@ struct ItemFormView: View {
     @State private var category: Category = .other
     @State private var tags: String = ""
     @State private var selectedImage: UIImage?
-    @State private var showingImagePicker = false
-    @State private var pickerSourceType: UIImagePickerController.SourceType = .photoLibrary
+    @State private var imageSource: ImageSource?
 
     var body: some View {
         NavigationStack {
@@ -50,8 +49,7 @@ struct ItemFormView: View {
 
                         HStack(spacing: 12) {
                             Button {
-                                pickerSourceType = .camera
-                                showingImagePicker = true
+                                imageSource = ImageSource(sourceType: .camera)
                             } label: {
                                 Label("拍照", systemImage: "camera.fill")
                                     .font(.subheadline.weight(.medium))
@@ -64,8 +62,7 @@ struct ItemFormView: View {
                             .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
 
                             Button {
-                                pickerSourceType = .photoLibrary
-                                showingImagePicker = true
+                                imageSource = ImageSource(sourceType: .photoLibrary)
                             } label: {
                                 Label("相册", systemImage: "photo.fill")
                                     .font(.subheadline.weight(.medium))
@@ -128,10 +125,15 @@ struct ItemFormView: View {
                     }
                 }
             }
-            .fullScreenCover(isPresented: $showingImagePicker) {
-                PhotoPicker(image: $selectedImage, sourceType: pickerSourceType)
+            .fullScreenCover(item: $imageSource) { source in
+                PhotoPicker(image: $selectedImage, sourceType: source.sourceType)
                     .ignoresSafeArea()
             }
         }
     }
+}
+
+struct ImageSource: Identifiable {
+    var id: String { sourceType == .camera ? "camera" : "library" }
+    let sourceType: UIImagePickerController.SourceType
 }
