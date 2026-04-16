@@ -61,7 +61,63 @@ struct ItemFormView: View {
                             }
                         }
 
+                        HStack(spacing: 16) {
+                            Button {
+                                imageSource = ImageSource(sourceType: .camera)
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "camera.fill")
+                                    Text("拍照")
+                                }
+                                .font(.subheadline.weight(.semibold))
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .background(AppColors.primaryGradient)
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                            }
+                            .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+
+                            Button {
+                                imageSource = ImageSource(sourceType: .photoLibrary)
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "photo.fill")
+                                    Text("相册")
+                                }
+                                .font(.subheadline.weight(.semibold))
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .background(Color(.systemGray5))
+                                .foregroundColor(.primary)
+                                .cornerRadius(12)
+                            }
+                        }
+
                         if !selectedImages.isEmpty {
+                            HStack(spacing: 12) {
+                                Button {
+                                    imageSource = ImageSource(sourceType: .camera)
+                                } label: {
+                                    Image(systemName: "camera.fill")
+                                        .font(.subheadline.weight(.semibold))
+                                        .frame(width: 44, height: 44)
+                                        .background(AppColors.primaryGradient)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(10)
+                                }
+                                .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+
+                                Button {
+                                    imageSource = ImageSource(sourceType: .photoLibrary)
+                                } label: {
+                                    Image(systemName: "photo.fill")
+                                        .font(.subheadline.weight(.semibold))
+                                        .frame(width: 44, height: 44)
+                                        .background(Color(.systemGray5))
+                                        .foregroundColor(.primary)
+                                        .cornerRadius(10)
+                                }
+                            }
+
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 10) {
                                     ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
@@ -105,58 +161,8 @@ struct ItemFormView: View {
                                             }
                                         }
                                     }
-
-                                    HStack(spacing: 8) {
-                                        Button {
-                                            imageSource = ImageSource(sourceType: .camera)
-                                        } label: {
-                                            Image(systemName: "camera.fill")
-                                                .frame(width: 40, height: 40)
-                                                .background(AppColors.primaryGradient)
-                                                .foregroundColor(.white)
-                                                .cornerRadius(10)
-                                        }
-                                        .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
-
-                                        Button {
-                                            imageSource = ImageSource(sourceType: .photoLibrary)
-                                        } label: {
-                                            Image(systemName: "photo.fill")
-                                                .frame(width: 40, height: 40)
-                                                .background(Color(.systemGray5))
-                                                .foregroundColor(.primary)
-                                                .cornerRadius(10)
-                                        }
-                                    }
                                 }
                                 .padding(.vertical, 4)
-                            }
-                        } else {
-                            HStack(spacing: 12) {
-                                Button {
-                                    imageSource = ImageSource(sourceType: .camera)
-                                } label: {
-                                    Label("拍照", systemImage: "camera.fill")
-                                        .font(.subheadline.weight(.medium))
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 10)
-                                        .background(AppColors.primaryGradient)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(12)
-                                }
-                                .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
-
-                                Button {
-                                    imageSource = ImageSource(sourceType: .photoLibrary)
-                                } label: {
-                                    Label("相册", systemImage: "photo.fill")
-                                        .font(.subheadline.weight(.medium))
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 10)
-                                        .background(Color(.systemGray5))
-                                        .foregroundColor(.primary)
-                                        .cornerRadius(12)
-                                }
                             }
                         }
                     }
@@ -231,6 +237,6 @@ struct ItemFormView: View {
 }
 
 struct ImageSource: Identifiable {
-    var id: String { sourceType == .camera ? "camera" : "library" }
+    let id = UUID()
     let sourceType: UIImagePickerController.SourceType
 }
