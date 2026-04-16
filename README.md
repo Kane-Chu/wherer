@@ -1,6 +1,24 @@
 # Wherer
 
-> 你的私人物品收纳管家 —— 记录每一件物品的位置，告别找不到东西的烦恼。
+<p align="center">
+  <img src="Wherer/Assets.xcassets/AppIcon.appiconset/AppIcon.png" width="120" alt="Wherer App Icon">
+</p>
+
+<p align="center">
+  <b>你的私人物品收纳管家</b><br>
+  记录每一件物品的位置，告别找不到东西的烦恼。
+</p>
+
+<p align="center">
+  <a href="https://github.com/Kane-Chu/wherer/releases">
+    <img src="https://img.shields.io/github/v/release/Kane-Chu/wherer" alt="Release">
+  </a>
+  <img src="https://img.shields.io/badge/iOS-17.0+-blue.svg" alt="iOS 17.0+">
+  <img src="https://img.shields.io/badge/Swift-5-orange.svg" alt="Swift 5">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License">
+</p>
+
+---
 
 ## 简介
 
@@ -15,12 +33,21 @@
 - **快速搜索**：通过名称、位置或标签快速定位物品
 - **按空间浏览**：进入空间详情页，查看该空间下的所有物品
 - **最近添加**：首页展示最新添加的物品，方便快速回顾
+- **iCloud 同步**：基于 Core Data + CloudKit，数据可在你的 Apple 设备间同步
+
+## 应用截图
+
+<p align="center">
+  <img src="wireframe_v2.png" width="320" alt="Wherer 设计稿">
+</p>
+
+> 更多设计稿请参考仓库根目录下的 `wireframe.html` 及 `wireframe_*.png`。
 
 ## 技术栈
 
 - **语言**：Swift 5
 - **框架**：SwiftUI
-- **数据持久化**：Core Data + CloudKit（本地优先，支持 iCloud 同步）
+- **数据持久化**：Core Data + CloudKit
 - **最低系统版本**：iOS 17.0
 - **构建工具**：Xcode + `project.yml`（XcodeGen）
 
@@ -45,23 +72,61 @@ WhererTests/             # 单元测试
 
 ## 本地运行
 
+### 前置要求
+
+- macOS 14+
+- Xcode 15+
+- iOS 17.0+ 真机或模拟器
+
+### 运行步骤
+
 1. 克隆仓库到本地
-2. 使用 Xcode 15+ 打开 `Wherer.xcodeproj`
-3. 选择目标设备或模拟器（iOS 17.0+）
+
+```bash
+git clone https://github.com/Kane-Chu/wherer.git
+cd wherer
+```
+
+2. 使用 Xcode 打开工程
+
+```bash
+open Wherer.xcodeproj
+```
+
+> 如果 `.xcodeproj` 文件不存在或需要重新生成，请确保已安装 [XcodeGen](https://github.com/yonaskolb/XcodeGen)，然后执行：
+> ```bash
+> xcodegen generate
+> ```
+
+3. 选择目标设备或模拟器
 4. 点击 `Cmd + R` 编译并运行
 
-> 提示：项目使用 `project.yml` 管理 Xcode 工程配置。如需重新生成 `.xcodeproj`，请确保已安装 [XcodeGen](https://github.com/yonaskolb/XcodeGen)，然后执行 `xcodegen generate`。
+### 所需权限
+
+- **相机**：用于拍摄物品照片（`NSCameraUsageDescription`）
+- **相册**：用于从照片库选择物品图片（`NSPhotoLibraryUsageDescription`）
+
+## 测试
+
+项目包含单元测试，覆盖模型、搜索服务和 Store 逻辑：
+
+```bash
+Cmd + U
+```
 
 ## 版本历史
+
+### v1.0.1 (2026-04-17)
+- 补充完善项目 README 文档
 
 ### v1.0.0 (2026-04-17)
 - Wherer MVP 正式发布
 - 支持空间管理、物品增删改查、拍照/相册上传、封面设置、图片预览和搜索
 
-## 设计稿
+## 贡献
 
-项目初期的原型设计和线框图可参考仓库根目录下的 `wireframe.html` 及 `wireframe_*.png`。
+欢迎提交 Issue 和 Pull Request。
 
 ## 开源协议
 
-MIT License
+[MIT License](LICENSE)
