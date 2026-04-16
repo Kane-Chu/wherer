@@ -73,11 +73,11 @@ class ItemStore: ObservableObject {
         item.updatedAt = Date()
 
         if let image = image {
-            if let oldFilename = item.photoFilename {
-                PhotoService.deletePhoto(filename: oldFilename)
-            }
             do {
                 let filename = try PhotoService.savePhoto(image, for: item.wrappedId)
+                if let oldFilename = item.photoFilename {
+                    PhotoService.deletePhoto(filename: oldFilename)
+                }
                 item.photoFilename = filename
             } catch {
                 print("Failed to save photo: \(error)")
@@ -98,6 +98,7 @@ class ItemStore: ObservableObject {
     }
 
     private func saveContext() {
+        guard context.hasChanges else { return }
         do {
             try context.save()
         } catch {

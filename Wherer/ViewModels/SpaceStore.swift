@@ -69,6 +69,7 @@ class SpaceStore: ObservableObject {
     }
 
     private func saveContext() {
+        guard context.hasChanges else { return }
         do {
             try context.save()
         } catch {
