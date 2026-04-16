@@ -15,40 +15,67 @@ struct ItemFormView: View {
     @State private var tags: String = ""
     @State private var selectedImage: UIImage?
     @State private var showingImagePicker = false
-    @State private var showingSourceSheet = false
     @State private var pickerSourceType: UIImagePickerController.SourceType = .photoLibrary
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(.systemGray6))
-                            .frame(height: 160)
-                            .overlay(
-                                Group {
-                                    if let image = selectedImage {
-                                        Image(uiImage: image)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(height: 160)
-                                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                                    } else {
-                                        VStack(spacing: 8) {
-                                            Image(systemName: "camera.fill")
-                                                .font(.title2)
-                                                .foregroundColor(.secondary)
-                                            Text("点击拍照或从相册选择")
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
+                    VStack(spacing: 12) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color(.systemGray6))
+                                .frame(height: 160)
+                                .overlay(
+                                    Group {
+                                        if let image = selectedImage {
+                                            Image(uiImage: image)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(height: 160)
+                                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                        } else {
+                                            VStack(spacing: 8) {
+                                                Image(systemName: "camera.fill")
+                                                    .font(.title2)
+                                                    .foregroundColor(.secondary)
+                                                Text("点击拍照或从相册选择")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.secondary)
+                                            }
                                         }
                                     }
-                                }
-                            )
-                            .onTapGesture {
-                                showingSourceSheet = true
+                                )
+                        }
+
+                        HStack(spacing: 12) {
+                            Button {
+                                pickerSourceType = .camera
+                                showingImagePicker = true
+                            } label: {
+                                Label("拍照", systemImage: "camera.fill")
+                                    .font(.subheadline.weight(.medium))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 10)
+                                    .background(AppColors.primaryGradient)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(12)
                             }
+                            .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+
+                            Button {
+                                pickerSourceType = .photoLibrary
+                                showingImagePicker = true
+                            } label: {
+                                Label("相册", systemImage: "photo.fill")
+                                    .font(.subheadline.weight(.medium))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 10)
+                                    .background(Color(.systemGray5))
+                                    .foregroundColor(.primary)
+                                    .cornerRadius(12)
+                            }
+                        }
                     }
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
@@ -101,19 +128,9 @@ struct ItemFormView: View {
                     }
                 }
             }
-            .confirmationDialog("选择照片来源", isPresented: $showingSourceSheet, titleVisibility: .visible) {
-                Button("拍照") {
-                    pickerSourceType = .camera
-                    showingImagePicker = true
-                }
-                Button("从相册选择") {
-                    pickerSourceType = .photoLibrary
-                    showingImagePicker = true
-                }
-                Button("取消", role: .cancel) {}
-            }
-            .sheet(isPresented: $showingImagePicker) {
+            .fullScreenCover(isPresented: $showingImagePicker) {
                 PhotoPicker(image: $selectedImage, sourceType: pickerSourceType)
+                    .ignoresSafeArea()
             }
         }
     }
