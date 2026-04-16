@@ -34,6 +34,19 @@ extension Item {
         photoFilename
     }
 
+    var photoList: [ItemPhoto] {
+        let set = photos as? Set<ItemPhoto> ?? []
+        return set.sorted { $0.wrappedCreatedAt < $1.wrappedCreatedAt }
+    }
+
+    var coverPhoto: ItemPhoto? {
+        photoList.first { $0.wrappedIsCover } ?? photoList.first
+    }
+
+    var coverPhotoFilename: String? {
+        coverPhoto?.wrappedFilename ?? photoFilename
+    }
+
     var wrappedSpace: Space? {
         space
     }

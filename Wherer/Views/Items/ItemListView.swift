@@ -42,8 +42,7 @@ struct ItemListView: View {
                             .font(.title3.weight(.semibold))
                             .foregroundColor(.white)
                             .frame(width: 40, height: 40)
-                            .background(AppColors.primaryGradient)
-                            .clipShape(Circle())
+                            .background(Circle().fill(AppColors.primaryGradient))
                     }
                     .disabled(spaceStore.spaces.isEmpty)
                 }

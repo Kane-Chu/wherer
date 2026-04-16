@@ -15,7 +15,7 @@ struct SpaceDetailView: View {
                     editingItem = item
                 } label: {
                     HStack(spacing: 12) {
-                        if let filename = item.wrappedPhotoFilename,
+                        if let filename = item.coverPhotoFilename,
                            let image = PhotoService.loadPhoto(filename: filename) {
                             Image(uiImage: image)
                                 .resizable()

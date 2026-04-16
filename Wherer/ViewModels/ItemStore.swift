@@ -39,7 +39,7 @@ class ItemStore: ObservableObject {
         filteredItems.filter { $0.wrappedCategory == category }
     }
 
-    func addItem(name: String, location: String, space: Space, category: Category, tags: String, image: UIImage?) {
+    func addItem(name: String, location: String, space: Space, category: Category, tags: String, images: [UIImage], coverIndex: Int?) {
         let item = Item(context: context)
         let id = UUID()
         item.id = id
@@ -51,20 +51,13 @@ class ItemStore: ObservableObject {
         item.createdAt = Date()
         item.updatedAt = Date()
 
-        if let image = image {
-            do {
-                let filename = try PhotoService.savePhoto(image, for: id)
-                item.photoFilename = filename
-            } catch {
-                print("Failed to save photo: \(error)")
-            }
-        }
+        syncPhotos(for: item, images: images, coverIndex: coverIndex)
 
         saveContext()
         fetchItems()
     }
 
-    func updateItem(_ item: Item, name: String, location: String, space: Space, category: Category, tags: String, image: UIImage?) {
+    func updateItem(_ item: Item, name: String, location: String, space: Space, category: Category, tags: String, images: [UIImage], coverIndex: Int?) {
         item.name = name
         item.location = location
         item.space = space
@@ -72,34 +65,59 @@ class ItemStore: ObservableObject {
         item.tags = tags
         item.updatedAt = Date()
 
-        if let image = image {
-            do {
-                let filename = try PhotoService.savePhoto(image, for: item.wrappedId)
-                if let oldFilename = item.photoFilename, oldFilename != filename {
-                    PhotoService.deletePhoto(filename: oldFilename)
-                }
-                item.photoFilename = filename
-            } catch {
-                print("Failed to save photo: \(error)")
+        // Remove old photos
+        if let oldPhotos = item.photos as? Set<ItemPhoto> {
+            for photo in oldPhotos {
+                PhotoService.deletePhoto(filename: photo.wrappedFilename)
+                context.delete(photo)
             }
-        } else if item.photoFilename != nil {
-            if let oldFilename = item.photoFilename {
-                PhotoService.deletePhoto(filename: oldFilename)
-            }
+        }
+        if let oldFilename = item.photoFilename {
+            PhotoService.deletePhoto(filename: oldFilename)
             item.photoFilename = nil
         }
+
+        syncPhotos(for: item, images: images, coverIndex: coverIndex)
 
         saveContext()
         fetchItems()
     }
 
     func deleteItem(_ item: Item) {
+        if let photos = item.photos as? Set<ItemPhoto> {
+            for photo in photos {
+                PhotoService.deletePhoto(filename: photo.wrappedFilename)
+            }
+        }
         if let filename = item.photoFilename {
             PhotoService.deletePhoto(filename: filename)
         }
         context.delete(item)
         saveContext()
         fetchItems()
+    }
+
+    private func syncPhotos(for item: Item, images: [UIImage], coverIndex: Int?) {
+        let effectiveCover = coverIndex ?? 0
+        for (index, image) in images.enumerated() {
+            do {
+                let photo = ItemPhoto(context: context)
+                photo.id = UUID()
+                photo.filename = try PhotoService.savePhoto(image, for: photo.id ?? UUID())
+                photo.isCover = (index == effectiveCover)
+                photo.createdAt = Date()
+                photo.item = item
+            } catch {
+                print("Failed to save photo: \(error)")
+            }
+        }
+        if let first = images.first, item.photoFilename == nil {
+            do {
+                item.photoFilename = try PhotoService.savePhoto(first, for: item.wrappedId)
+            } catch {
+                print("Failed to save legacy cover photo: \(error)")
+            }
+        }
     }
 
     private func saveContext() {

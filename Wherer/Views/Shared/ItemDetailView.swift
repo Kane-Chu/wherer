@@ -12,8 +12,35 @@ struct ItemDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                if let filename = item.wrappedPhotoFilename,
-                   let image = PhotoService.loadPhoto(filename: filename) {
+                if !item.photoList.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(Array(item.photoList.enumerated()), id: \.offset) { index, photo in
+                                if let image = PhotoService.loadPhoto(filename: photo.wrappedFilename) {
+                                    ZStack(alignment: .topTrailing) {
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 280, height: 200)
+                                            .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                                        if photo.wrappedIsCover {
+                                            Text("封面")
+                                                .font(.caption2.weight(.bold))
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 4)
+                                                .background(Color.orange)
+                                                .foregroundColor(.white)
+                                                .cornerRadius(8)
+                                                .padding(8)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if let filename = item.photoFilename,
+                          let image = PhotoService.loadPhoto(filename: filename) {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFit()

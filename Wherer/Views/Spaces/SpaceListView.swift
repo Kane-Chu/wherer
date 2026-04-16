@@ -50,7 +50,7 @@ struct SpaceListView: View {
                                 selectedItem = item
                             } label: {
                                 HStack(spacing: 12) {
-                                    if let filename = item.wrappedPhotoFilename,
+                                    if let filename = item.coverPhotoFilename,
                                        let image = PhotoService.loadPhoto(filename: filename) {
                                         Image(uiImage: image)
                                             .resizable()
@@ -91,8 +91,7 @@ struct SpaceListView: View {
                             .font(.title3.weight(.semibold))
                             .foregroundColor(.white)
                             .frame(width: 40, height: 40)
-                            .background(AppColors.primaryGradient)
-                            .clipShape(Circle())
+                            .background(Circle().fill(AppColors.primaryGradient))
                     }
                 }
             }

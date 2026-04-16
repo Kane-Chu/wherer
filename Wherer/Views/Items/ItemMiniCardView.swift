@@ -5,7 +5,7 @@ struct ItemMiniCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            if let filename = item.wrappedPhotoFilename,
+            if let filename = item.coverPhotoFilename,
                let image = PhotoService.loadPhoto(filename: filename) {
                 Image(uiImage: image)
                     .resizable()

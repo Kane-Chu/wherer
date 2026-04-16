@@ -13,7 +13,10 @@ struct ItemFormView: View {
     @State private var selectedSpace: Space?
     @State private var category: Category = .other
     @State private var tags: String = ""
-    @State private var selectedImage: UIImage?
+    @State private var selectedImages: [UIImage] = []
+    @State private var coverIndex: Int = 0
+    @State private var deletingIndex: Int?
+    @State private var pickerImage: UIImage?
     @State private var imageSource: ImageSource?
 
     var body: some View {
@@ -21,14 +24,14 @@ struct ItemFormView: View {
             Form {
                 Section {
                     VStack(spacing: 12) {
-                        ZStack {
+                        ZStack(alignment: .topTrailing) {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(Color(.systemGray6))
                                 .frame(height: 160)
                                 .overlay(
                                     Group {
-                                        if let image = selectedImage {
-                                            Image(uiImage: image)
+                                        if !selectedImages.isEmpty {
+                                            Image(uiImage: selectedImages[coverIndex])
                                                 .resizable()
                                                 .scaledToFill()
                                                 .frame(height: 160)
@@ -45,32 +48,115 @@ struct ItemFormView: View {
                                         }
                                     }
                                 )
+
+                            if !selectedImages.isEmpty {
+                                Text("封面")
+                                    .font(.caption2.weight(.bold))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.orange)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                                    .padding(8)
+                            }
                         }
 
-                        HStack(spacing: 12) {
-                            Button {
-                                imageSource = ImageSource(sourceType: .camera)
-                            } label: {
-                                Label("拍照", systemImage: "camera.fill")
-                                    .font(.subheadline.weight(.medium))
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 10)
-                                    .background(AppColors.primaryGradient)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(12)
-                            }
-                            .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+                        if !selectedImages.isEmpty {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
+                                        ZStack {
+                                            Image(uiImage: image)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 64, height: 64)
+                                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 10)
+                                                        .stroke(coverIndex == index ? Color.accentColor : Color.clear, lineWidth: 3)
+                                                )
+                                                .onTapGesture {
+                                                    coverIndex = index
+                                                    deletingIndex = nil
+                                                }
+                                                .onLongPressGesture {
+                                                    deletingIndex = index
+                                                }
 
-                            Button {
-                                imageSource = ImageSource(sourceType: .photoLibrary)
-                            } label: {
-                                Label("相册", systemImage: "photo.fill")
-                                    .font(.subheadline.weight(.medium))
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 10)
-                                    .background(Color(.systemGray5))
-                                    .foregroundColor(.primary)
-                                    .cornerRadius(12)
+                                            if deletingIndex == index {
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .fill(Color.black.opacity(0.4))
+                                                    .frame(width: 64, height: 64)
+
+                                                Button {
+                                                    selectedImages.remove(at: index)
+                                                    if coverIndex >= selectedImages.count {
+                                                        coverIndex = max(0, selectedImages.count - 1)
+                                                    }
+                                                    deletingIndex = nil
+                                                } label: {
+                                                    Image(systemName: "trash.fill")
+                                                        .font(.title3)
+                                                        .foregroundColor(.white)
+                                                        .padding(8)
+                                                        .background(Color.red)
+                                                        .clipShape(Circle())
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    HStack(spacing: 8) {
+                                        Button {
+                                            imageSource = ImageSource(sourceType: .camera)
+                                        } label: {
+                                            Image(systemName: "camera.fill")
+                                                .frame(width: 40, height: 40)
+                                                .background(AppColors.primaryGradient)
+                                                .foregroundColor(.white)
+                                                .cornerRadius(10)
+                                        }
+                                        .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+
+                                        Button {
+                                            imageSource = ImageSource(sourceType: .photoLibrary)
+                                        } label: {
+                                            Image(systemName: "photo.fill")
+                                                .frame(width: 40, height: 40)
+                                                .background(Color(.systemGray5))
+                                                .foregroundColor(.primary)
+                                                .cornerRadius(10)
+                                        }
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        } else {
+                            HStack(spacing: 12) {
+                                Button {
+                                    imageSource = ImageSource(sourceType: .camera)
+                                } label: {
+                                    Label("拍照", systemImage: "camera.fill")
+                                        .font(.subheadline.weight(.medium))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                        .background(AppColors.primaryGradient)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(12)
+                                }
+                                .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+
+                                Button {
+                                    imageSource = ImageSource(sourceType: .photoLibrary)
+                                } label: {
+                                    Label("相册", systemImage: "photo.fill")
+                                        .font(.subheadline.weight(.medium))
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 10)
+                                        .background(Color(.systemGray5))
+                                        .foregroundColor(.primary)
+                                        .cornerRadius(12)
+                                }
                             }
                         }
                     }
@@ -102,10 +188,11 @@ struct ItemFormView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
                         guard let targetSpace = selectedSpace else { return }
+                        let cover = selectedImages.isEmpty ? nil : coverIndex
                         if let item = item {
-                            itemStore.updateItem(item, name: name, location: location, space: targetSpace, category: category, tags: tags, image: selectedImage)
+                            itemStore.updateItem(item, name: name, location: location, space: targetSpace, category: category, tags: tags, images: selectedImages, coverIndex: cover)
                         } else {
-                            itemStore.addItem(name: name, location: location, space: targetSpace, category: category, tags: tags, image: selectedImage)
+                            itemStore.addItem(name: name, location: location, space: targetSpace, category: category, tags: tags, images: selectedImages, coverIndex: cover)
                         }
                         dismiss()
                     }
@@ -120,14 +207,19 @@ struct ItemFormView: View {
                     selectedSpace = item.wrappedSpace
                     category = item.wrappedCategory
                     tags = item.tags ?? ""
-                    if let filename = item.wrappedPhotoFilename {
-                        selectedImage = PhotoService.loadPhoto(filename: filename)
-                    }
+                    selectedImages = item.photoList.compactMap { PhotoService.loadPhoto(filename: $0.wrappedFilename) }
+                    coverIndex = item.photoList.firstIndex { $0.wrappedIsCover } ?? 0
                 }
             }
             .fullScreenCover(item: $imageSource) { source in
-                PhotoPicker(image: $selectedImage, sourceType: source.sourceType)
+                PhotoPicker(image: $pickerImage, sourceType: source.sourceType)
                     .ignoresSafeArea()
+            }
+            .onChange(of: pickerImage) { _, newImage in
+                if let image = newImage {
+                    selectedImages.append(image)
+                    pickerImage = nil
+                }
             }
         }
     }
