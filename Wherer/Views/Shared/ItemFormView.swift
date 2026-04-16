@@ -15,7 +15,6 @@ struct ItemFormView: View {
     @State private var tags: String = ""
     @State private var selectedImage: UIImage?
     @State private var showingImagePicker = false
-    @State private var imageSource: UIImagePickerController.SourceType = .photoLibrary
 
     var body: some View {
         NavigationStack {
@@ -101,7 +100,7 @@ struct ItemFormView: View {
                 }
             }
             .sheet(isPresented: $showingImagePicker) {
-                PhotoPicker(image: $selectedImage, sourceType: imageSource)
+                PhotoPicker(image: $selectedImage, sourceType: .photoLibrary)
             }
         }
     }

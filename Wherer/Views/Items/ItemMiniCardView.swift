@@ -30,7 +30,7 @@ struct ItemMiniCardView: View {
                 .lineLimit(1)
         }
         .padding(10)
-        .background(Color.white)
+        .background(Color(.systemBackground))
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)

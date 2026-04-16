@@ -67,14 +67,13 @@ struct ItemDetailView: View {
                 Button("编辑") {
                     showingEdit = true
                 }
+                .disabled(item.wrappedSpace == nil)
             }
         }
         .sheet(isPresented: $showingEdit) {
-            if let space = item.wrappedSpace {
-                ItemFormView(space: space, item: item)
-                    .environmentObject(itemStore)
-                    .environmentObject(spaceStore)
-            }
+            ItemFormView(space: item.wrappedSpace!, item: item)
+                .environmentObject(itemStore)
+                .environmentObject(spaceStore)
         }
         .alert("确认删除？", isPresented: $showingDeleteConfirm) {
             Button("取消", role: .cancel) {}
