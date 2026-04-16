@@ -1,5 +1,4 @@
 import SwiftUI
-import PhotosUI
 
 struct ItemFormView: View {
     @Environment(\.dismiss) private var dismiss
@@ -17,130 +16,166 @@ struct ItemFormView: View {
     @State private var selectedImages: [UIImage] = []
     @State private var coverIndex: Int = 0
     @State private var deletingIndex: Int?
+    @State private var photoSource: PhotoSource?
     @State private var pickerImage: UIImage?
-    @State private var showingCamera = false
-    @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var isPickingPhoto = false
 
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    VStack(spacing: 16) {
-                        ZStack(alignment: .topTrailing) {
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(Color(.systemGray6))
-                                .frame(height: 180)
-                                .overlay(previewContent)
+                photoSection
+                basicInfoSection
+            }
+            .navigationTitle(navigationTitle)
+            .toolbar { formToolbar }
+            .onAppear(perform: loadItemData)
+            .onChange(of: pickerImage, handlePickerImage)
+            .onChange(of: photoSource, handlePhotoSourceChange)
+        }
+        .overlay(
+            PhotoPickerPresenter(photoSource: $photoSource, image: $pickerImage)
+                .allowsHitTesting(false)
+        )
+    }
 
-                            if !selectedImages.isEmpty {
-                                Text("封面")
-                                    .font(.caption2.weight(.bold))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.orange)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8)
-                                    .padding(8)
-                            }
-                        }
+    private var navigationTitle: String {
+        item == nil ? "添加物品" : "编辑物品"
+    }
 
-                        photoActionButtons
+    private var photoSection: some View {
+        Section {
+            VStack(spacing: 16) {
+                photoPreview
+                photoActionButtons
+                if !selectedImages.isEmpty {
+                    thumbnailScroll
+                }
+            }
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.clear)
+        }
+    }
 
-                        if !selectedImages.isEmpty {
-                            thumbnailScroll
-                        }
-                    }
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                }
+    private var photoPreview: some View {
+        ZStack(alignment: .topTrailing) {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(.systemGray6))
+                .frame(height: 180)
+                .overlay(previewContent)
 
-                Section("基本信息") {
-                    TextField("物品名称", text: $name)
-                    TextField("存放位置", text: $location)
-                    Picker("所属空间", selection: $selectedSpace) {
-                        ForEach(spaceStore.spaces) { space in
-                            Text(space.wrappedName).tag(space as Space?)
-                        }
-                    }
-                    Picker("类型", selection: $category) {
-                        ForEach(Category.allCases) { category in
-                            Text(category.rawValue).tag(category)
-                        }
-                    }
-                    TextField("标签（用逗号分隔）", text: $tags)
-                }
-            }
-            .navigationTitle(item == nil ? "添加物品" : "编辑物品")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
-                        guard let targetSpace = selectedSpace else { return }
-                        let cover = selectedImages.isEmpty ? nil : coverIndex
-                        if let item = item {
-                            itemStore.updateItem(item, name: name, location: location, space: targetSpace, category: category, tags: tags, images: selectedImages, coverIndex: cover)
-                        } else {
-                            itemStore.addItem(name: name, location: location, space: targetSpace, category: category, tags: tags, images: selectedImages, coverIndex: cover)
-                        }
-                        dismiss()
-                    }
-                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || selectedSpace == nil)
-                }
-            }
-            .onAppear {
-                selectedSpace = space
-                if let item = item {
-                    name = item.wrappedName
-                    location = item.wrappedLocation
-                    selectedSpace = item.wrappedSpace
-                    category = item.wrappedCategory
-                    tags = item.tags ?? ""
-                    selectedImages = item.photoList.compactMap { PhotoService.loadPhoto(filename: $0.wrappedFilename) }
-                    if selectedImages.isEmpty, let filename = item.photoFilename {
-                        if let image = PhotoService.loadPhoto(filename: filename) {
-                            selectedImages = [image]
-                        }
-                    }
-                    coverIndex = item.photoList.firstIndex { $0.wrappedIsCover } ?? 0
-                }
-            }
-            .fullScreenCover(isPresented: $showingCamera) {
-                PhotoPicker(image: $pickerImage, sourceType: .camera)
-                    .ignoresSafeArea()
-            }
-            .onChange(of: pickerImage) { _, newImage in
-                if let image = newImage {
-                    selectedImages.append(image)
-                    pickerImage = nil
-                }
-            }
-            .onChange(of: selectedPhotoItem) { _, newItem in
-                guard let newItem else { return }
-                Task {
-                    if let data = try? await newItem.loadTransferable(type: Data.self),
-                       let image = UIImage(data: data) {
-                        await MainActor.run {
-                            selectedImages.append(image)
-                            selectedPhotoItem = nil
-                        }
-                    }
-                }
+            if !selectedImages.isEmpty {
+                coverLabel
             }
         }
     }
 
-    private var albumButtonLabel: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "photo.fill")
-            Text("相册")
+    private var coverLabel: some View {
+        Text("封面")
+            .font(.caption2.weight(.bold))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color.orange)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            .padding(8)
+    }
+
+    private var basicInfoSection: some View {
+        Section("基本信息") {
+            TextField("物品名称", text: $name)
+            TextField("存放位置", text: $location)
+            Picker("所属空间", selection: $selectedSpace) {
+                ForEach(spaceStore.spaces) { space in
+                    Text(space.wrappedName).tag(space as Space?)
+                }
+            }
+            Picker("类型", selection: $category) {
+                ForEach(Category.allCases) { category in
+                    Text(category.rawValue).tag(category)
+                }
+            }
+            TextField("标签（用逗号分隔）", text: $tags)
         }
-        .font(.subheadline.weight(.semibold))
-        .frame(maxWidth: .infinity, minHeight: 44)
-        .background(Color(.systemGray5))
-        .foregroundColor(.primary)
-        .cornerRadius(12)
+    }
+
+    private var formToolbar: some ToolbarContent {
+        Group {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("取消") { dismiss() }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("保存", action: saveItem)
+                    .disabled(saveDisabled)
+            }
+        }
+    }
+
+    private var saveDisabled: Bool {
+        name.trimmingCharacters(in: .whitespaces).isEmpty || selectedSpace == nil
+    }
+
+    private func saveItem() {
+        guard let targetSpace = selectedSpace else { return }
+        let cover = selectedImages.isEmpty ? nil : coverIndex
+        if let item = item {
+            itemStore.updateItem(item, name: name, location: location, space: targetSpace, category: category, tags: tags, images: selectedImages, coverIndex: cover)
+        } else {
+            itemStore.addItem(name: name, location: location, space: targetSpace, category: category, tags: tags, images: selectedImages, coverIndex: cover)
+        }
+        dismiss()
+    }
+
+    private func loadItemData() {
+        selectedSpace = space
+        guard let item = item else { return }
+        name = item.wrappedName
+        location = item.wrappedLocation
+        selectedSpace = item.wrappedSpace
+        category = item.wrappedCategory
+        tags = item.tags ?? ""
+        selectedImages = item.photoList.compactMap { PhotoService.loadPhoto(filename: $0.wrappedFilename) }
+        if selectedImages.isEmpty, let filename = item.photoFilename {
+            if let image = PhotoService.loadPhoto(filename: filename) {
+                selectedImages = [image]
+            }
+        }
+        coverIndex = item.photoList.firstIndex { $0.wrappedIsCover } ?? 0
+    }
+
+    private func handlePickerImage(_ old: UIImage?, _ new: UIImage?) {
+        if let image = new {
+            selectedImages.append(image)
+            pickerImage = nil
+        }
+    }
+
+    private func handlePhotoSourceChange(_ old: PhotoSource?, _ new: PhotoSource?) {
+        if new == nil {
+            isPickingPhoto = false
+        }
+    }
+
+    private var photoActionButtons: some View {
+        HStack(spacing: 16) {
+            cameraButtonLabel
+                .onTapGesture(perform: openCamera)
+                .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+
+            albumButtonLabel
+                .onTapGesture(perform: openAlbum)
+        }
+    }
+
+    private func openCamera() {
+        guard !isPickingPhoto else { return }
+        isPickingPhoto = true
+        photoSource = PhotoSource(sourceType: .camera)
+    }
+
+    private func openAlbum() {
+        guard !isPickingPhoto else { return }
+        isPickingPhoto = true
+        photoSource = PhotoSource(sourceType: .photoLibrary)
     }
 
     private var cameraButtonLabel: some View {
@@ -155,23 +190,16 @@ struct ItemFormView: View {
         .cornerRadius(12)
     }
 
-    private var photoActionButtons: some View {
-        HStack(spacing: 16) {
-            Button {
-                showingCamera = true
-            } label: {
-                cameraButtonLabel
-            }
-            .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
-
-            PhotosPicker(
-                selection: $selectedPhotoItem,
-                matching: .images,
-                photoLibrary: .shared()
-            ) {
-                albumButtonLabel
-            }
+    private var albumButtonLabel: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "photo.fill")
+            Text("相册")
         }
+        .font(.subheadline.weight(.semibold))
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .background(Color(.systemGray5))
+        .foregroundColor(.primary)
+        .cornerRadius(12)
     }
 
     private var thumbnailScroll: some View {
@@ -186,7 +214,7 @@ struct ItemFormView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(coverIndex == index ? Color.accentColor : Color.clear, lineWidth: 3)
+                                    .stroke(coverIndex == index ? AppColors.accent : Color.clear, lineWidth: 3)
                             )
                             .onTapGesture {
                                 coverIndex = index
@@ -242,4 +270,9 @@ struct ItemFormView: View {
             }
         }
     }
+}
+
+struct PhotoSource: Identifiable, Equatable {
+    let id = UUID()
+    let sourceType: UIImagePickerController.SourceType
 }

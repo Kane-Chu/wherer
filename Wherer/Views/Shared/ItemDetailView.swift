@@ -5,9 +5,10 @@ struct ItemDetailView: View {
     @EnvironmentObject var spaceStore: SpaceStore
     @Environment(\.dismiss) private var dismiss
 
-    let item: Item
+    @ObservedObject var item: Item
     @State private var showingEdit = false
     @State private var showingDeleteConfirm = false
+    @State private var previewImage: PreviewImage?
 
     var body: some View {
         ScrollView {
@@ -23,6 +24,9 @@ struct ItemDetailView: View {
                                             .scaledToFill()
                                             .frame(width: 280, height: 200)
                                             .clipShape(RoundedRectangle(cornerRadius: 16))
+                                            .onTapGesture {
+                                                previewImage = PreviewImage(image: image)
+                                            }
 
                                         if photo.wrappedIsCover {
                                             Text("封面")
@@ -45,6 +49,9 @@ struct ItemDetailView: View {
                         .resizable()
                         .scaledToFit()
                         .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .onTapGesture {
+                            previewImage = PreviewImage(image: image)
+                        }
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
@@ -111,6 +118,9 @@ struct ItemDetailView: View {
         } message: {
             Text("删除后将无法恢复")
         }
+        .fullScreenCover(item: $previewImage) { wrapper in
+            ImagePreviewView(image: wrapper.image)
+        }
     }
 }
 
@@ -127,6 +137,58 @@ struct DetailRow: View {
             Text(value)
                 .font(.body)
             Spacer()
+        }
+    }
+}
+
+struct PreviewImage: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
+struct ImagePreviewView: View {
+    let image: UIImage
+    @Environment(\.dismiss) private var dismiss
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+
+    var body: some View {
+        NavigationStack {
+            GeometryReader { _ in
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .scaleEffect(scale)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                let delta = value / lastScale
+                                lastScale = value
+                                scale *= delta
+                            }
+                            .onEnded { _ in
+                                withAnimation {
+                                    scale = max(1.0, min(scale, 5.0))
+                                    lastScale = 1.0
+                                }
+                            }
+                    )
+                    .onTapGesture(count: 2) {
+                        withAnimation {
+                            scale = scale > 1.2 ? 1.0 : 3.0
+                        }
+                    }
+            }
+            .background(.black)
+            .ignoresSafeArea()
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("关闭") { dismiss() }
+                        .foregroundColor(.white)
+                }
+            }
         }
     }
 }

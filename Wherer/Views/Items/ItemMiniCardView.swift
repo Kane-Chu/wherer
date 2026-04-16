@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ItemMiniCardView: View {
-    let item: Item
+    @ObservedObject var item: Item
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {

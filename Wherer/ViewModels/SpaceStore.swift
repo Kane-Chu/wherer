@@ -10,6 +10,21 @@ class SpaceStore: ObservableObject {
         self.context = context
         fetchSpaces()
         seedDefaultSpacesIfNeeded()
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleContextSave),
+            name: NSManagedObjectContext.didSaveObjectsNotification,
+            object: context
+        )
+    }
+
+    @objc private func handleContextSave() {
+        fetchSpaces()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: NSManagedObjectContext.didSaveObjectsNotification, object: context)
     }
 
     func fetchSpaces() {

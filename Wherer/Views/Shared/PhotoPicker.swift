@@ -1,30 +1,38 @@
 import SwiftUI
 
-struct PhotoPicker: UIViewControllerRepresentable {
+struct PhotoPickerPresenter: UIViewControllerRepresentable {
+    @Binding var photoSource: PhotoSource?
     @Binding var image: UIImage?
-    var sourceType: UIImagePickerController.SourceType = .photoLibrary
 
-    func makeUIViewController(context: Context) -> UIImagePickerController {
+    func makeUIViewController(context: Context) -> UIViewController {
+        let vc = UIViewController()
+        vc.view.backgroundColor = .clear
+        return vc
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        guard let source = photoSource else { return }
+        guard let window = uiViewController.view.window,
+              let rootVC = window.rootViewController else { return }
+
+        var topVC = rootVC
+        while let presented = topVC.presentedViewController {
+            topVC = presented
+        }
+
+        guard !(topVC is UIImagePickerController) else { return }
+
         let picker = UIImagePickerController()
-        if UIImagePickerController.isSourceTypeAvailable(sourceType) {
-            picker.sourceType = sourceType
+        picker.modalPresentationStyle = .fullScreen
+
+        if UIImagePickerController.isSourceTypeAvailable(source.sourceType) {
+            picker.sourceType = source.sourceType
         } else {
             picker.sourceType = .photoLibrary
         }
         picker.delegate = context.coordinator
-        return picker
-    }
 
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {
-        let target: UIImagePickerController.SourceType
-        if UIImagePickerController.isSourceTypeAvailable(sourceType) {
-            target = sourceType
-        } else {
-            target = .photoLibrary
-        }
-        if uiViewController.sourceType != target {
-            uiViewController.sourceType = target
-        }
+        topVC.present(picker, animated: true)
     }
 
     func makeCoordinator() -> Coordinator {
@@ -32,9 +40,9 @@ struct PhotoPicker: UIViewControllerRepresentable {
     }
 
     class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-        let parent: PhotoPicker
+        let parent: PhotoPickerPresenter
 
-        init(_ parent: PhotoPicker) {
+        init(_ parent: PhotoPickerPresenter) {
             self.parent = parent
         }
 
@@ -42,11 +50,15 @@ struct PhotoPicker: UIViewControllerRepresentable {
             if let uiImage = info[.originalImage] as? UIImage {
                 parent.image = uiImage
             }
-            picker.dismiss(animated: true)
+            picker.dismiss(animated: true) { [weak self] in
+                self?.parent.photoSource = nil
+            }
         }
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            picker.dismiss(animated: true)
+            picker.dismiss(animated: true) { [weak self] in
+                self?.parent.photoSource = nil
+            }
         }
     }
 }
