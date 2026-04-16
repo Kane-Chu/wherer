@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct ItemFormView: View {
     @Environment(\.dismiss) private var dismiss
@@ -18,7 +19,7 @@ struct ItemFormView: View {
     @State private var deletingIndex: Int?
     @State private var pickerImage: UIImage?
     @State private var showingCamera = false
-    @State private var showingLibrary = false
+    @State private var selectedPhotoItem: PhotosPickerItem?
 
     var body: some View {
         NavigationStack {
@@ -29,26 +30,7 @@ struct ItemFormView: View {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(Color(.systemGray6))
                                 .frame(height: 180)
-                                .overlay(
-                                    Group {
-                                        if !selectedImages.isEmpty {
-                                            Image(uiImage: selectedImages[coverIndex])
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(height: 180)
-                                                .clipShape(RoundedRectangle(cornerRadius: 20))
-                                        } else {
-                                            VStack(spacing: 10) {
-                                                Image(systemName: "camera.fill")
-                                                    .font(.system(size: 44, weight: .medium))
-                                                    .foregroundColor(.secondary)
-                                                Text("点击拍照或从相册选择")
-                                                    .font(.body.weight(.medium))
-                                                    .foregroundColor(.secondary)
-                                            }
-                                        }
-                                    }
-                                )
+                                .overlay(previewContent)
 
                             if !selectedImages.isEmpty {
                                 Text("封面")
@@ -62,109 +44,10 @@ struct ItemFormView: View {
                             }
                         }
 
-                        HStack(spacing: 16) {
-                            Button {
-                                showingCamera = true
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "camera.fill")
-                                    Text("拍照")
-                                }
-                                .font(.subheadline.weight(.semibold))
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                                .background(AppColors.primaryGradient)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                            }
-                            .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
-
-                            Button {
-                                showingLibrary = true
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "photo.fill")
-                                    Text("相册")
-                                }
-                                .font(.subheadline.weight(.semibold))
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                                .background(Color(.systemGray5))
-                                .foregroundColor(.primary)
-                                .cornerRadius(12)
-                            }
-                        }
+                        photoActionButtons
 
                         if !selectedImages.isEmpty {
-                            HStack(spacing: 12) {
-                                Button {
-                                    showingCamera = true
-                                } label: {
-                                    Image(systemName: "camera.fill")
-                                        .font(.subheadline.weight(.semibold))
-                                        .frame(width: 44, height: 44)
-                                        .background(AppColors.primaryGradient)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(10)
-                                }
-                                .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
-
-                                Button {
-                                    showingLibrary = true
-                                } label: {
-                                    Image(systemName: "photo.fill")
-                                        .font(.subheadline.weight(.semibold))
-                                        .frame(width: 44, height: 44)
-                                        .background(Color(.systemGray5))
-                                        .foregroundColor(.primary)
-                                        .cornerRadius(10)
-                                }
-                            }
-
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 10) {
-                                    ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
-                                        ZStack {
-                                            Image(uiImage: image)
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(width: 64, height: 64)
-                                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 10)
-                                                        .stroke(coverIndex == index ? Color.accentColor : Color.clear, lineWidth: 3)
-                                                )
-                                                .onTapGesture {
-                                                    coverIndex = index
-                                                    deletingIndex = nil
-                                                }
-                                                .onLongPressGesture {
-                                                    deletingIndex = index
-                                                }
-
-                                            if deletingIndex == index {
-                                                RoundedRectangle(cornerRadius: 10)
-                                                    .fill(Color.black.opacity(0.4))
-                                                    .frame(width: 64, height: 64)
-
-                                                Button {
-                                                    selectedImages.remove(at: index)
-                                                    if coverIndex >= selectedImages.count {
-                                                        coverIndex = max(0, selectedImages.count - 1)
-                                                    }
-                                                    deletingIndex = nil
-                                                } label: {
-                                                    Image(systemName: "trash.fill")
-                                                        .font(.title3)
-                                                        .foregroundColor(.white)
-                                                        .padding(8)
-                                                        .background(Color.red)
-                                                        .clipShape(Circle())
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                .padding(.vertical, 4)
-                            }
+                            thumbnailScroll
                         }
                     }
                     .listRowInsets(EdgeInsets())
@@ -227,15 +110,135 @@ struct ItemFormView: View {
                 PhotoPicker(image: $pickerImage, sourceType: .camera)
                     .ignoresSafeArea()
             }
-            .fullScreenCover(isPresented: $showingLibrary) {
-                PhotoPicker(image: $pickerImage, sourceType: .photoLibrary)
-                    .ignoresSafeArea()
-            }
             .onChange(of: pickerImage) { _, newImage in
                 if let image = newImage {
                     selectedImages.append(image)
                     pickerImage = nil
                 }
+            }
+            .onChange(of: selectedPhotoItem) { _, newItem in
+                guard let newItem else { return }
+                Task {
+                    if let data = try? await newItem.loadTransferable(type: Data.self),
+                       let image = UIImage(data: data) {
+                        await MainActor.run {
+                            selectedImages.append(image)
+                            selectedPhotoItem = nil
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var albumButtonLabel: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "photo.fill")
+            Text("相册")
+        }
+        .font(.subheadline.weight(.semibold))
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .background(Color(.systemGray5))
+        .foregroundColor(.primary)
+        .cornerRadius(12)
+    }
+
+    private var cameraButtonLabel: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "camera.fill")
+            Text("拍照")
+        }
+        .font(.subheadline.weight(.semibold))
+        .frame(maxWidth: .infinity, minHeight: 44)
+        .background(AppColors.primaryGradient)
+        .foregroundColor(.white)
+        .cornerRadius(12)
+    }
+
+    private var photoActionButtons: some View {
+        HStack(spacing: 16) {
+            Button {
+                showingCamera = true
+            } label: {
+                cameraButtonLabel
+            }
+            .disabled(!UIImagePickerController.isSourceTypeAvailable(.camera))
+
+            PhotosPicker(
+                selection: $selectedPhotoItem,
+                matching: .images,
+                photoLibrary: .shared()
+            ) {
+                albumButtonLabel
+            }
+        }
+    }
+
+    private var thumbnailScroll: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                ForEach(Array(selectedImages.enumerated()), id: \.offset) { index, image in
+                    ZStack {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 64, height: 64)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(coverIndex == index ? Color.accentColor : Color.clear, lineWidth: 3)
+                            )
+                            .onTapGesture {
+                                coverIndex = index
+                                deletingIndex = nil
+                            }
+                            .onLongPressGesture {
+                                deletingIndex = index
+                            }
+
+                        if deletingIndex == index {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.black.opacity(0.4))
+                                .frame(width: 64, height: 64)
+
+                            Button {
+                                selectedImages.remove(at: index)
+                                if coverIndex >= selectedImages.count {
+                                    coverIndex = max(0, selectedImages.count - 1)
+                                }
+                                deletingIndex = nil
+                            } label: {
+                                Image(systemName: "trash.fill")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                                    .padding(8)
+                                    .background(Color.red)
+                                    .clipShape(Circle())
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    @ViewBuilder
+    private var previewContent: some View {
+        if !selectedImages.isEmpty {
+            Image(uiImage: selectedImages[coverIndex])
+                .resizable()
+                .scaledToFill()
+                .frame(height: 180)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+        } else {
+            VStack(spacing: 10) {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 44, weight: .medium))
+                    .foregroundColor(.secondary)
+                Text("点击拍照或从相册选择")
+                    .font(.body.weight(.medium))
+                    .foregroundColor(.secondary)
             }
         }
     }
