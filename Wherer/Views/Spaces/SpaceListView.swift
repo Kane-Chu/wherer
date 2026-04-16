@@ -50,13 +50,22 @@ struct SpaceListView: View {
                                 selectedItem = item
                             } label: {
                                 HStack(spacing: 12) {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(.systemGray5))
-                                        .frame(width: 56, height: 56)
-                                        .overlay(
-                                            Image(systemName: item.wrappedCategory.icon)
-                                                .foregroundColor(.gray)
-                                        )
+                                    if let filename = item.wrappedPhotoFilename,
+                                       let image = PhotoService.loadPhoto(filename: filename) {
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 56, height: 56)
+                                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color(.systemGray5))
+                                            .frame(width: 56, height: 56)
+                                            .overlay(
+                                                Image(systemName: item.wrappedCategory.icon)
+                                                    .foregroundColor(.gray)
+                                            )
+                                    }
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(item.wrappedName)
                                             .font(.body.weight(.medium))
