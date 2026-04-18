@@ -80,6 +80,7 @@ class ItemStore: ObservableObject {
         syncPhotos(for: item, images: images, coverIndex: coverIndex)
 
         saveContext()
+        context.refresh(item, mergeChanges: true)
         fetchItems()
     }
 
