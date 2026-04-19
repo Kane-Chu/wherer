@@ -16,7 +16,18 @@ struct PhotoService {
     }()
 
     static func savePhoto(_ image: UIImage, for itemID: UUID) throws -> String {
-        guard let data = image.jpegData(compressionQuality: 0.85) else {
+        // Normalize image to ensure jpegData succeeds for any source
+        let normalized: UIImage
+        if image.imageOrientation == .up {
+            normalized = image
+        } else {
+            UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale)
+            image.draw(in: CGRect(origin: .zero, size: image.size))
+            normalized = UIGraphicsGetImageFromCurrentImageContext() ?? image
+            UIGraphicsEndImageContext()
+        }
+
+        guard let data = normalized.jpegData(compressionQuality: 0.85) else {
             throw PhotoServiceError.invalidImage
         }
         let filename = "\(itemID.uuidString).jpg"

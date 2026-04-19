@@ -5,18 +5,23 @@ struct ItemDetailView: View {
     @EnvironmentObject var spaceStore: SpaceStore
     @Environment(\.dismiss) private var dismiss
 
-    @ObservedObject var item: Item
+    let itemID: UUID
+    @State private var photos: [ItemPhoto] = []
     @State private var showingEdit = false
     @State private var showingDeleteConfirm = false
     @State private var previewImage: PreviewImage?
 
+    private var item: Item {
+        itemStore.items.first { $0.wrappedId == itemID }!
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                if !item.photoList.isEmpty {
+                if !photos.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            ForEach(Array(item.photoList.enumerated()), id: \.offset) { index, photo in
+                            ForEach(Array(photos.enumerated()), id: \.offset) { index, photo in
                                 if let image = PhotoService.loadPhoto(filename: photo.wrappedFilename) {
                                     ZStack(alignment: .topTrailing) {
                                         Image(uiImage: image)
@@ -96,6 +101,7 @@ struct ItemDetailView: View {
             .padding()
         }
         .navigationTitle(item.wrappedName)
+        .id(item.photoList.count)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("编辑") {
@@ -104,7 +110,9 @@ struct ItemDetailView: View {
                 .disabled(item.wrappedSpace == nil)
             }
         }
-        .sheet(isPresented: $showingEdit) {
+        .sheet(isPresented: $showingEdit, onDismiss: {
+            photos = item.photoList
+        }) {
             ItemFormView(space: item.wrappedSpace!, item: item)
                 .environmentObject(itemStore)
                 .environmentObject(spaceStore)
@@ -120,6 +128,9 @@ struct ItemDetailView: View {
         }
         .fullScreenCover(item: $previewImage) { wrapper in
             ImagePreviewView(image: wrapper.image)
+        }
+        .onAppear {
+            photos = item.photoList
         }
     }
 }
@@ -139,6 +150,10 @@ struct DetailRow: View {
             Spacer()
         }
     }
+}
+
+struct ItemIdentifier: Identifiable {
+    let id: UUID
 }
 
 struct PreviewImage: Identifiable {

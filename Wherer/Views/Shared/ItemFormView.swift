@@ -116,16 +116,21 @@ struct ItemFormView: View {
 
     private func saveItem() {
         guard let targetSpace = selectedSpace else { return }
-        let cover = selectedImages.isEmpty ? nil : coverIndex
+        var imagesToSave = selectedImages
+        if imagesToSave.isEmpty, let pending = pickerImage {
+            imagesToSave = [pending]
+        }
+        let cover = imagesToSave.isEmpty ? nil : coverIndex
         if let item = item {
-            itemStore.updateItem(item, name: name, location: location, space: targetSpace, category: category, tags: tags, images: selectedImages, coverIndex: cover)
+            itemStore.updateItem(item, name: name, location: location, space: targetSpace, category: category, tags: tags, images: imagesToSave, coverIndex: cover)
         } else {
-            itemStore.addItem(name: name, location: location, space: targetSpace, category: category, tags: tags, images: selectedImages, coverIndex: cover)
+            itemStore.addItem(name: name, location: location, space: targetSpace, category: category, tags: tags, images: imagesToSave, coverIndex: cover)
         }
         dismiss()
     }
 
     private func loadItemData() {
+        guard selectedImages.isEmpty else { return }
         selectedSpace = space
         guard let item = item else { return }
         name = item.wrappedName
@@ -163,8 +168,30 @@ struct ItemFormView: View {
 
             albumButtonLabel
                 .onTapGesture(perform: openAlbum)
+
+            #if DEBUG
+            debugTestImageButton
+            #endif
         }
     }
+
+    #if DEBUG
+    private var debugTestImageButton: some View {
+        Button {
+            selectedImages.append(TestImageGenerator.generate())
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "bolt.fill")
+                Text("测试图")
+            }
+            .font(.subheadline.weight(.semibold))
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background(Color.green.opacity(0.8))
+            .foregroundColor(.white)
+            .cornerRadius(12)
+        }
+    }
+    #endif
 
     private func openCamera() {
         guard !isPickingPhoto else { return }
@@ -275,4 +302,34 @@ struct ItemFormView: View {
 struct PhotoSource: Identifiable, Equatable {
     let id = UUID()
     let sourceType: UIImagePickerController.SourceType
+}
+
+enum TestImageGenerator {
+    static func generate() -> UIImage {
+        let size = CGSize(width: 300, height: 300)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { context in
+            let colors: [UIColor] = [.systemRed, .systemBlue, .systemGreen, .systemOrange, .systemPurple, .systemTeal]
+            let color = colors.randomElement()!
+            color.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+
+            let text = "\(Int.random(in: 1...99))"
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.alignment = .center
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 72, weight: .bold),
+                .foregroundColor: UIColor.white,
+                .paragraphStyle: paragraphStyle
+            ]
+            let textSize = text.size(withAttributes: attributes)
+            let textRect = CGRect(
+                x: (size.width - textSize.width) / 2,
+                y: (size.height - textSize.height) / 2,
+                width: textSize.width,
+                height: textSize.height
+            )
+            text.draw(in: textRect, withAttributes: attributes)
+        }
+    }
 }

@@ -5,7 +5,7 @@ struct SpaceListView: View {
     @EnvironmentObject var itemStore: ItemStore
     @State private var showingAddSpace = false
     @State private var editingSpace: Space?
-    @State private var selectedItem: Item?
+    @State private var selectedItemID: ItemIdentifier?
     @State private var searchQuery = ""
 
     var body: some View {
@@ -37,7 +37,7 @@ struct SpaceListView: View {
                         }
 
                         if !itemStore.recentItems.isEmpty {
-                            RecentItemsSection(items: itemStore.recentItems, selectedItem: $selectedItem)
+                            RecentItemsSection(items: itemStore.recentItems, selectedItemID: $selectedItemID)
                                 .padding(.top, 8)
                         }
                     } else {
@@ -47,35 +47,9 @@ struct SpaceListView: View {
 
                         ForEach(SearchService.filter(items: itemStore.items, query: searchQuery)) { item in
                             Button {
-                                selectedItem = item
+                                selectedItemID = ItemIdentifier(id: item.wrappedId)
                             } label: {
-                                HStack(spacing: 12) {
-                                    if let filename = item.coverPhotoFilename,
-                                       let image = PhotoService.loadPhoto(filename: filename) {
-                                        Image(uiImage: image)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 56, height: 56)
-                                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                                    } else {
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color(.systemGray5))
-                                            .frame(width: 56, height: 56)
-                                            .overlay(
-                                                Image(systemName: item.wrappedCategory.icon)
-                                                    .foregroundColor(.gray)
-                                            )
-                                    }
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(item.wrappedName)
-                                            .font(.body.weight(.medium))
-                                        Text(item.wrappedLocation)
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    Spacer()
-                                }
-                                .padding(.vertical, 4)
+                                SearchResultRowView(item: item)
                             }
                             .buttonStyle(.plain)
                         }
@@ -111,13 +85,47 @@ struct SpaceListView: View {
                 SpaceFormView(space: space)
                     .environmentObject(spaceStore)
             }
-            .sheet(item: $selectedItem) { item in
+            .sheet(item: $selectedItemID) { wrapper in
                 NavigationStack {
-                    ItemDetailView(item: item)
+                    ItemDetailView(itemID: wrapper.id)
                         .environmentObject(itemStore)
                         .environmentObject(spaceStore)
                 }
             }
         }
+    }
+}
+
+struct SearchResultRowView: View {
+    @ObservedObject var item: Item
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if let filename = item.coverPhotoFilename,
+               let image = PhotoService.loadPhoto(filename: filename) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(.systemGray5))
+                    .frame(width: 56, height: 56)
+                    .overlay(
+                        Image(systemName: item.wrappedCategory.icon)
+                            .foregroundColor(.gray)
+                    )
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.wrappedName)
+                    .font(.body.weight(.medium))
+                Text(item.wrappedLocation)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 4)
     }
 }

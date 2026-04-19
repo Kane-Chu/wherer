@@ -14,46 +14,7 @@ struct SpaceDetailView: View {
                 Button {
                     editingItem = item
                 } label: {
-                    HStack(spacing: 12) {
-                        if let filename = item.coverPhotoFilename,
-                           let image = PhotoService.loadPhoto(filename: filename) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 56, height: 56)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        } else {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(.systemGray5))
-                                .frame(width: 56, height: 56)
-                                .overlay(
-                                    Image(systemName: item.wrappedCategory.icon)
-                                        .foregroundColor(.gray)
-                                )
-                        }
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(item.wrappedName)
-                                .font(.body.weight(.medium))
-                            Text(item.wrappedLocation)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            if !item.wrappedTags.isEmpty {
-                                HStack(spacing: 4) {
-                                    ForEach(item.wrappedTags, id: \.self) { tag in
-                                        Text(tag)
-                                            .font(.caption2)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 2)
-                                            .background(Color.accentColor.opacity(0.12))
-                                            .foregroundColor(.accentColor)
-                                            .cornerRadius(10)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.vertical, 4)
+                    SpaceDetailItemRowView(item: item)
                 }
                 .buttonStyle(.plain)
             }
@@ -80,5 +41,52 @@ struct SpaceDetailView: View {
                 .environmentObject(itemStore)
                 .environmentObject(spaceStore)
         }
+    }
+}
+
+struct SpaceDetailItemRowView: View {
+    @ObservedObject var item: Item
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if let filename = item.coverPhotoFilename,
+               let image = PhotoService.loadPhoto(filename: filename) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(.systemGray5))
+                    .frame(width: 56, height: 56)
+                    .overlay(
+                        Image(systemName: item.wrappedCategory.icon)
+                            .foregroundColor(.gray)
+                    )
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.wrappedName)
+                    .font(.body.weight(.medium))
+                Text(item.wrappedLocation)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                if !item.wrappedTags.isEmpty {
+                    HStack(spacing: 4) {
+                        ForEach(item.wrappedTags, id: \.self) { tag in
+                            Text(tag)
+                                .font(.caption2)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(Color.accentColor.opacity(0.12))
+                                .foregroundColor(.accentColor)
+                                .cornerRadius(10)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 4)
     }
 }

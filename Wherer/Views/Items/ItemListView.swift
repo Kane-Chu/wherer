@@ -4,7 +4,7 @@ struct ItemListView: View {
     @EnvironmentObject var itemStore: ItemStore
     @EnvironmentObject var spaceStore: SpaceStore
     @State private var searchQuery = ""
-    @State private var selectedItem: Item?
+    @State private var selectedItemID: ItemIdentifier?
     @State private var showingAddItem = false
 
     var body: some View {
@@ -27,7 +27,7 @@ struct ItemListView: View {
                     ForEach(Category.allCases) { category in
                         let items = filtered.filter { $0.wrappedCategory == category }
                         if !items.isEmpty {
-                            CategorySection(category: category, items: items, selectedItem: $selectedItem)
+                            CategorySection(category: category, items: items, selectedItemID: $selectedItemID)
                                 .padding(.horizontal, 4)
                         }
                     }
@@ -57,9 +57,9 @@ struct ItemListView: View {
                         .environmentObject(spaceStore)
                 }
             }
-            .sheet(item: $selectedItem) { item in
+            .sheet(item: $selectedItemID) { wrapper in
                 NavigationStack {
-                    ItemDetailView(item: item)
+                    ItemDetailView(itemID: wrapper.id)
                         .environmentObject(itemStore)
                         .environmentObject(spaceStore)
                 }

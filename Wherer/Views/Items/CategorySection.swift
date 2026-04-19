@@ -3,7 +3,7 @@ import SwiftUI
 struct CategorySection: View {
     let category: Category
     let items: [Item]
-    @Binding var selectedItem: Item?
+    @Binding var selectedItemID: ItemIdentifier?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -22,7 +22,7 @@ struct CategorySection: View {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 ForEach(items) { item in
                     Button {
-                        selectedItem = item
+                        selectedItemID = ItemIdentifier(id: item.wrappedId)
                     } label: {
                         ItemMiniCardView(item: item)
                     }
