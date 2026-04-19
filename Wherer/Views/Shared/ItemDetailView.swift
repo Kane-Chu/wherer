@@ -10,106 +10,154 @@ struct ItemDetailView: View {
     @State private var showingEdit = false
     @State private var showingDeleteConfirm = false
     @State private var previewImage: PreviewImage?
+    @State private var showingActionSheet = false
 
     private var item: Item {
         itemStore.items.first { $0.wrappedId == itemID }!
     }
 
+    private var coverImageSection: some View {
+        ZStack(alignment: .bottomLeading) {
+            coverImageContent
+                .frame(height: 260)
+                .clipped()
+
+            LinearGradient(
+                colors: [.black.opacity(0.4), .clear],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 100)
+            .overlay(alignment: .top) {
+                HStack {
+                    backButton
+                    Spacer()
+                    moreButton
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+            }
+
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.5)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 100)
+            .overlay(alignment: .bottomLeading) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.wrappedName)
+                        .font(.title3.weight(.bold))
+                        .foregroundColor(.white)
+                    Text(item.wrappedLocation)
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                .padding(16)
+            }
+        }
+    }
+
+    private var coverImageContent: some View {
+        Group {
+            if !photos.isEmpty {
+                TabView {
+                    ForEach(Array(photos.enumerated()), id: \.offset) { index, photo in
+                        if let image = PhotoService.loadPhoto(filename: photo.wrappedFilename) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .onTapGesture {
+                                    previewImage = PreviewImage(image: image)
+                                }
+                        }
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: photos.count > 1 ? .always : .never))
+            } else if let filename = item.photoFilename,
+                      let image = PhotoService.loadPhoto(filename: filename) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .onTapGesture {
+                        previewImage = PreviewImage(image: image)
+                    }
+            } else {
+                Color(.systemGray5)
+                    .overlay(
+                        Image(systemName: item.wrappedCategory.icon)
+                            .font(.system(size: 60))
+                            .foregroundColor(.gray)
+                    )
+            }
+        }
+    }
+
+    private var backButton: some View {
+        Button {
+            dismiss()
+        } label: {
+            Image(systemName: "chevron.left")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 36, height: 36)
+                .background(.ultraThinMaterial)
+                .clipShape(Circle())
+        }
+    }
+
+    private var moreButton: some View {
+        Button {
+            showingActionSheet = true
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 36, height: 36)
+                .background(.ultraThinMaterial)
+                .clipShape(Circle())
+        }
+    }
+
+    private var infoSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            InfoRow(label: "空间", value: item.wrappedSpace?.wrappedName ?? "-")
+            Divider()
+            InfoRow(label: "类型", value: item.wrappedCategory.rawValue)
+            Divider()
+            InfoRow(label: "标签") {
+                if !item.wrappedTags.isEmpty {
+                    HStack(spacing: 6) {
+                        ForEach(item.wrappedTags, id: \.self) { tag in
+                            Text(tag)
+                                .font(.caption)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Color.accentColor.opacity(0.12))
+                                .foregroundColor(.accentColor)
+                                .cornerRadius(12)
+                        }
+                    }
+                } else {
+                    Text("-")
+                        .font(.body)
+                        .foregroundColor(.primary)
+                }
+            }
+            Divider()
+            InfoRow(label: "更新于", value: item.wrappedUpdatedAt.formatted())
+        }
+        .padding(.horizontal, 16)
+    }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                if !photos.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach(Array(photos.enumerated()), id: \.offset) { index, photo in
-                                if let image = PhotoService.loadPhoto(filename: photo.wrappedFilename) {
-                                    ZStack(alignment: .topTrailing) {
-                                        Image(uiImage: image)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 280, height: 200)
-                                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                                            .onTapGesture {
-                                                previewImage = PreviewImage(image: image)
-                                            }
-
-                                        if photo.wrappedIsCover {
-                                            Text("封面")
-                                                .font(.caption2.weight(.bold))
-                                                .padding(.horizontal, 8)
-                                                .padding(.vertical, 4)
-                                                .background(Color.orange)
-                                                .foregroundColor(.white)
-                                                .cornerRadius(8)
-                                                .padding(8)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else if let filename = item.photoFilename,
-                          let image = PhotoService.loadPhoto(filename: filename) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .onTapGesture {
-                            previewImage = PreviewImage(image: image)
-                        }
-                }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    DetailRow(title: "名称", value: item.wrappedName)
-                    DetailRow(title: "位置", value: item.wrappedLocation)
-                    DetailRow(title: "空间", value: item.wrappedSpace?.wrappedName ?? "-")
-                    DetailRow(title: "类型", value: item.wrappedCategory.rawValue)
-                    if !item.wrappedTags.isEmpty {
-                        HStack {
-                            Text("标签")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                                .frame(width: 60, alignment: .leading)
-                            HStack(spacing: 6) {
-                                ForEach(item.wrappedTags, id: \.self) { tag in
-                                    Text(tag)
-                                        .font(.caption)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 4)
-                                        .background(Color.accentColor.opacity(0.12))
-                                        .foregroundColor(.accentColor)
-                                        .cornerRadius(12)
-                                }
-                            }
-                        }
-                    }
-                    DetailRow(title: "更新于", value: item.wrappedUpdatedAt.formatted())
-                }
-
-                Spacer()
-
-                Button(role: .destructive) {
-                    showingDeleteConfirm = true
-                } label: {
-                    Label("删除物品", systemImage: "trash")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
-                .padding(.top, 20)
+            VStack(alignment: .leading, spacing: 0) {
+                coverImageSection
+                infoSection
             }
-            .padding()
         }
-        .navigationTitle(item.wrappedName)
         .id(item.photoList.count)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("编辑") {
-                    showingEdit = true
-                }
-                .disabled(item.wrappedSpace == nil)
-            }
-        }
         .sheet(isPresented: $showingEdit, onDismiss: {
             photos = item.photoList
         }) {
@@ -132,22 +180,14 @@ struct ItemDetailView: View {
         .onAppear {
             photos = item.photoList
         }
-    }
-}
-
-struct DetailRow: View {
-    let title: String
-    let value: String
-
-    var body: some View {
-        HStack {
-            Text(title)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .frame(width: 60, alignment: .leading)
-            Text(value)
-                .font(.body)
-            Spacer()
+        .confirmationDialog("更多", isPresented: $showingActionSheet, titleVisibility: .hidden) {
+            Button("编辑物品") {
+                showingEdit = true
+            }
+            Button("删除物品", role: .destructive) {
+                showingDeleteConfirm = true
+            }
+            Button("取消", role: .cancel) {}
         }
     }
 }
@@ -205,5 +245,34 @@ struct ImagePreviewView: View {
                 }
             }
         }
+    }
+}
+
+struct InfoRow<Content: View>: View {
+    let label: String
+    let content: Content
+
+    init(label: String, @ViewBuilder content: () -> Content) {
+        self.label = label
+        self.content = content()
+    }
+
+    init(label: String, value: String) where Content == Text {
+        self.label = label
+        self.content = Text(value)
+            .font(.body)
+            .foregroundColor(.primary)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
+                .tracking(0.5)
+            content
+        }
+        .padding(.vertical, 12)
     }
 }
