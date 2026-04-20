@@ -19,15 +19,41 @@ struct ItemFormView: View {
     @State private var photoSource: PhotoSource?
     @State private var pickerImage: UIImage?
     @State private var isPickingPhoto = false
+    @State private var showingDeleteConfirm = false
+    @State private var showingSpacePicker = false
+    @State private var showingCategoryPicker = false
 
     var body: some View {
         NavigationStack {
-            Form {
-                photoSection
-                basicInfoSection
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
+                ScrollView {
+                    VStack(spacing: 8) {
+                        photoCard
+                        infoCard
+                        deleteCard
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
             }
             .navigationTitle(navigationTitle)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar { formToolbar }
+            .sheet(isPresented: $showingSpacePicker) { spacePickerSheet }
+            .sheet(isPresented: $showingCategoryPicker) { categoryPickerSheet }
+            .alert("确认删除？", isPresented: $showingDeleteConfirm) {
+                Button("取消", role: .cancel) {}
+                Button("删除", role: .destructive) {
+                    if let item = item {
+                        itemStore.deleteItem(item)
+                    }
+                    dismiss()
+                }
+            } message: {
+                Text("删除后将无法恢复")
+            }
             .onAppear(perform: loadItemData)
             .onChange(of: pickerImage, handlePickerImage)
             .onChange(of: photoSource, handlePhotoSourceChange)
@@ -42,75 +68,228 @@ struct ItemFormView: View {
         item == nil ? "添加物品" : "编辑物品"
     }
 
-    private var photoSection: some View {
-        Section {
-            VStack(spacing: 16) {
-                photoPreview
-                photoActionButtons
-                if !selectedImages.isEmpty {
-                    thumbnailScroll
+    // MARK: - Info Card
+
+    private var infoCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            TextField("物品名称", text: $name)
+                .padding(.vertical, 14)
+                .accessibilityIdentifier("itemNameField")
+
+            Divider()
+                .background(Color(.systemGray5))
+
+            TextField("存放位置", text: $location)
+                .padding(.vertical, 14)
+                .accessibilityIdentifier("itemLocationField")
+
+            Divider()
+                .background(Color(.systemGray5))
+
+            Button {
+                showingSpacePicker = true
+            } label: {
+                HStack {
+                    Text("所属空间")
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text(selectedSpace?.wrappedName ?? "-")
+                        .foregroundColor(.primary)
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 14)
+            }
+            .foregroundColor(.primary)
+            .accessibilityIdentifier("itemSpacePicker")
+
+            Divider()
+                .background(Color(.systemGray5))
+
+            Button {
+                showingCategoryPicker = true
+            } label: {
+                HStack {
+                    Text("类型")
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text(category.rawValue)
+                        .foregroundColor(.primary)
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 14)
+            }
+            .foregroundColor(.primary)
+            .accessibilityIdentifier("itemCategoryPicker")
+
+            Divider()
+                .background(Color(.systemGray5))
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("标签")
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    TextField("用逗号分隔", text: $tags)
+                        .multilineTextAlignment(.trailing)
+                        .accessibilityIdentifier("itemTagsField")
+                }
+                .padding(.vertical, 14)
+
+                if !parsedTags.isEmpty {
+                    HStack(spacing: 6) {
+                        ForEach(parsedTags, id: \.self) { tag in
+                            Text(tag)
+                                .font(.caption)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(AppColors.accent.opacity(0.12))
+                                .foregroundColor(AppColors.accent)
+                                .cornerRadius(12)
+                        }
+                    }
                 }
             }
-            .listRowInsets(EdgeInsets())
-            .listRowBackground(Color.clear)
         }
+        .padding(.horizontal, 16)
+        .background(Color(.systemBackground))
+        .cornerRadius(20)
+    }
+
+    private var parsedTags: [String] {
+        tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+    }
+
+    // MARK: - Delete Card
+
+    private var deleteCard: some View {
+        Group {
+            if item != nil {
+                Button {
+                    showingDeleteConfirm = true
+                } label: {
+                    HStack {
+                        Spacer()
+                        Text("删除物品")
+                            .font(.body.weight(.medium))
+                            .foregroundColor(.red)
+                        Spacer()
+                    }
+                    .padding(.vertical, 14)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(20)
+                }
+            }
+        }
+    }
+
+    // MARK: - Photo Card
+
+    private var photoCard: some View {
+        VStack(spacing: 12) {
+            photoPreview
+            photoActionButtons
+            if !selectedImages.isEmpty {
+                thumbnailScroll
+            }
+        }
+        .padding(16)
+        .background(Color(.systemBackground))
+        .cornerRadius(20)
     }
 
     private var photoPreview: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.systemGray6))
-                .frame(height: 180)
+                .frame(height: 160)
                 .overlay(previewContent)
 
             if !selectedImages.isEmpty {
-                coverLabel
+                Text("封面")
+                    .font(.caption2.weight(.bold))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(AppColors.accent)
+                    .foregroundColor(.white)
+                    .cornerRadius(4)
+                    .padding(10)
             }
         }
     }
 
-    private var coverLabel: some View {
-        Text("封面")
-            .font(.caption2.weight(.bold))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color.orange)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            .padding(8)
+    // MARK: - Picker Sheets
+
+    private var spacePickerSheet: some View {
+        NavigationStack {
+            List {
+                ForEach(spaceStore.spaces) { sp in
+                    Button {
+                        selectedSpace = sp
+                        showingSpacePicker = false
+                    } label: {
+                        HStack {
+                            Text(sp.wrappedName)
+                                .foregroundColor(.primary)
+                            Spacer()
+                            if sp.wrappedId == selectedSpace?.wrappedId {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(AppColors.accent)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("选择空间")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("完成") { showingSpacePicker = false }
+                }
+            }
+        }
     }
 
-    private var basicInfoSection: some View {
-        Section("基本信息") {
-            TextField("物品名称", text: $name)
-                .accessibilityIdentifier("itemNameField")
-            TextField("存放位置", text: $location)
-                .accessibilityIdentifier("itemLocationField")
-            Picker("所属空间", selection: $selectedSpace) {
-                ForEach(spaceStore.spaces) { space in
-                    Text(space.wrappedName).tag(space as Space?)
+    private var categoryPickerSheet: some View {
+        NavigationStack {
+            List {
+                ForEach(Category.allCases) { cat in
+                    Button {
+                        category = cat
+                        showingCategoryPicker = false
+                    } label: {
+                        HStack {
+                            Text(cat.rawValue)
+                                .foregroundColor(.primary)
+                            Spacer()
+                            if category == cat {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(AppColors.accent)
+                            }
+                        }
+                    }
                 }
             }
-            .accessibilityIdentifier("itemSpacePicker")
-            Picker("类型", selection: $category) {
-                ForEach(Category.allCases) { category in
-                    Text(category.rawValue).tag(category)
+            .navigationTitle("选择类型")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("完成") { showingCategoryPicker = false }
                 }
             }
-            .accessibilityIdentifier("itemCategoryPicker")
-            TextField("标签（用逗号分隔）", text: $tags)
-                .accessibilityIdentifier("itemTagsField")
         }
     }
 
     private var formToolbar: some ToolbarContent {
         Group {
-            ToolbarItem(placement: .cancellationAction) {
+            ToolbarItem(placement: .topBarLeading) {
                 Button("取消") { dismiss() }
                     .accessibilityIdentifier("itemFormCancelButton")
             }
-            ToolbarItem(placement: .confirmationAction) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("保存", action: saveItem)
+                    .fontWeight(.semibold)
                     .disabled(saveDisabled)
                     .accessibilityIdentifier("itemFormSaveButton")
             }
@@ -291,15 +470,15 @@ struct ItemFormView: View {
             Image(uiImage: selectedImages[coverIndex])
                 .resizable()
                 .scaledToFill()
-                .frame(height: 180)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .frame(height: 160)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
         } else {
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 Image(systemName: "camera.fill")
-                    .font(.system(size: 44, weight: .medium))
+                    .font(.system(size: 36, weight: .medium))
                     .foregroundColor(.secondary)
-                Text("点击拍照或从相册选择")
-                    .font(.body.weight(.medium))
+                Text("点击添加照片")
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
             }
         }
