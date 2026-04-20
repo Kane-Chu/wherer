@@ -48,6 +48,7 @@ struct ItemListView: View {
                         }
                     }
                     .disabled(spaceStore.spaces.isEmpty)
+                    .accessibilityIdentifier("addItemButton")
                 }
             }
             .sheet(isPresented: $showingAddItem) {
@@ -57,7 +58,7 @@ struct ItemListView: View {
                         .environmentObject(spaceStore)
                 }
             }
-            .sheet(item: $selectedItemID) { wrapper in
+            .fullScreenCover(item: $selectedItemID) { wrapper in
                 NavigationStack {
                     ItemDetailView(itemID: wrapper.id)
                         .environmentObject(itemStore)

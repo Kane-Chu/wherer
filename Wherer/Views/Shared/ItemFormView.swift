@@ -83,18 +83,23 @@ struct ItemFormView: View {
     private var basicInfoSection: some View {
         Section("基本信息") {
             TextField("物品名称", text: $name)
+                .accessibilityIdentifier("itemNameField")
             TextField("存放位置", text: $location)
+                .accessibilityIdentifier("itemLocationField")
             Picker("所属空间", selection: $selectedSpace) {
                 ForEach(spaceStore.spaces) { space in
                     Text(space.wrappedName).tag(space as Space?)
                 }
             }
+            .accessibilityIdentifier("itemSpacePicker")
             Picker("类型", selection: $category) {
                 ForEach(Category.allCases) { category in
                     Text(category.rawValue).tag(category)
                 }
             }
+            .accessibilityIdentifier("itemCategoryPicker")
             TextField("标签（用逗号分隔）", text: $tags)
+                .accessibilityIdentifier("itemTagsField")
         }
     }
 
@@ -102,10 +107,12 @@ struct ItemFormView: View {
         Group {
             ToolbarItem(placement: .cancellationAction) {
                 Button("取消") { dismiss() }
+                    .accessibilityIdentifier("itemFormCancelButton")
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("保存", action: saveItem)
                     .disabled(saveDisabled)
+                    .accessibilityIdentifier("itemFormSaveButton")
             }
         }
     }

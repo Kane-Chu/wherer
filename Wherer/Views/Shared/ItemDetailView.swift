@@ -17,45 +17,54 @@ struct ItemDetailView: View {
     }
 
     private var coverImageSection: some View {
-        ZStack(alignment: .bottomLeading) {
+        ZStack {
             coverImageContent
                 .frame(height: 260)
                 .clipped()
 
-            LinearGradient(
-                colors: [.black.opacity(0.4), .clear],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 100)
-            .overlay(alignment: .top) {
-                HStack {
-                    backButton
-                    Spacer()
-                    moreButton
+            // Top gradient + buttons
+            VStack {
+                LinearGradient(
+                    colors: [.black.opacity(0.4), .clear],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 100)
+                .overlay(alignment: .top) {
+                    HStack {
+                        backButton
+                        Spacer()
+                        moreButton
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
+                Spacer()
             }
 
-            LinearGradient(
-                colors: [.clear, .black.opacity(0.5)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 100)
-            .overlay(alignment: .bottomLeading) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.wrappedName)
-                        .font(.title3.weight(.bold))
-                        .foregroundColor(.white)
-                    Text(item.wrappedLocation)
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.9))
+            // Bottom gradient + title
+            VStack {
+                Spacer()
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.5)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 100)
+                .overlay(alignment: .bottomLeading) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(item.wrappedName)
+                            .font(.title3.weight(.bold))
+                            .foregroundColor(.white)
+                        Text(item.wrappedLocation)
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.9))
+                    }
+                    .padding(16)
                 }
-                .padding(16)
             }
         }
+        .ignoresSafeArea(edges: .top)
     }
 
     private var coverImageContent: some View {
