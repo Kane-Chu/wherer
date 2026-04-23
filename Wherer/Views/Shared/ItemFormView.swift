@@ -4,6 +4,7 @@ struct ItemFormView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var itemStore: ItemStore
     @EnvironmentObject var spaceStore: SpaceStore
+    @EnvironmentObject var themeManager: ThemeManager
 
     let space: Space
     var item: Item?
@@ -26,7 +27,7 @@ struct ItemFormView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(.systemGroupedBackground)
+                themeManager.effectiveColors.groupedBackground
                     .ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 8) {
@@ -146,8 +147,8 @@ struct ItemFormView: View {
                                 .font(.caption)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 4)
-                                .background(AppColors.accent.opacity(0.12))
-                                .foregroundColor(AppColors.accent)
+                                .background(themeManager.effectiveColors.tagTint.opacity(themeManager.effectiveColors.tagTintOpacity))
+                                .foregroundColor(themeManager.effectiveColors.accent)
                                 .cornerRadius(12)
                         }
                     }
@@ -155,7 +156,7 @@ struct ItemFormView: View {
             }
         }
         .padding(.horizontal, 16)
-        .background(Color(.systemBackground))
+        .background(themeManager.effectiveColors.cardBackground)
         .cornerRadius(20)
     }
 
@@ -179,7 +180,7 @@ struct ItemFormView: View {
                         Spacer()
                     }
                     .padding(.vertical, 14)
-                    .background(Color(.systemBackground))
+                    .background(themeManager.effectiveColors.cardBackground)
                     .cornerRadius(20)
                 }
             }
@@ -197,7 +198,7 @@ struct ItemFormView: View {
             }
         }
         .padding(16)
-        .background(Color(.systemBackground))
+        .background(themeManager.effectiveColors.cardBackground)
         .cornerRadius(20)
     }
 
@@ -213,7 +214,7 @@ struct ItemFormView: View {
                     .font(.caption2.weight(.bold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(AppColors.accent)
+                    .background(themeManager.effectiveColors.accent)
                     .foregroundColor(.white)
                     .cornerRadius(4)
                     .padding(10)
@@ -237,7 +238,7 @@ struct ItemFormView: View {
                             Spacer()
                             if sp.wrappedId == selectedSpace?.wrappedId {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(AppColors.accent)
+                                    .foregroundColor(themeManager.effectiveColors.accent)
                             }
                         }
                     }
@@ -266,7 +267,7 @@ struct ItemFormView: View {
                             Spacer()
                             if category == cat {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(AppColors.accent)
+                                    .foregroundColor(themeManager.effectiveColors.accent)
                             }
                         }
                     }
@@ -398,7 +399,7 @@ struct ItemFormView: View {
         }
         .font(.subheadline.weight(.semibold))
         .frame(maxWidth: .infinity, minHeight: 44)
-        .background(AppColors.primaryGradient)
+        .background(themeManager.effectiveColors.primaryGradient)
         .foregroundColor(.white)
         .cornerRadius(12)
     }
@@ -427,7 +428,7 @@ struct ItemFormView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(coverIndex == index ? AppColors.accent : Color.clear, lineWidth: 3)
+                                    .stroke(coverIndex == index ? themeManager.effectiveColors.accent : Color.clear, lineWidth: 3)
                             )
                             .onTapGesture {
                                 coverIndex = index
