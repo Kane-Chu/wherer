@@ -7,8 +7,6 @@ class ThemeManager: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    static let allThemes = Theme.allThemes
-
     var effectiveColors: ThemeColors {
         let isDark: Bool
         switch appearanceMode {
@@ -30,11 +28,16 @@ class ThemeManager: ObservableObject {
         }
     }
 
+    private enum Keys {
+        static let selectedThemeId = "selectedThemeId"
+        static let appearanceMode = "appearanceMode"
+    }
+
     init() {
-        let savedThemeId = UserDefaults.standard.string(forKey: "selectedThemeId")
+        let savedThemeId = UserDefaults.standard.string(forKey: Keys.selectedThemeId)
         currentTheme = Theme.allThemes.first { $0.id == savedThemeId } ?? Theme.defaultTheme
 
-        let savedMode = UserDefaults.standard.string(forKey: "appearanceMode")
+        let savedMode = UserDefaults.standard.string(forKey: Keys.appearanceMode)
         appearanceMode = AppearanceMode(rawValue: savedMode ?? "auto") ?? .auto
 
         $currentTheme
@@ -48,8 +51,8 @@ class ThemeManager: ObservableObject {
             .store(in: &cancellables)
     }
 
-    func save() {
-        UserDefaults.standard.set(currentTheme.id, forKey: "selectedThemeId")
-        UserDefaults.standard.set(appearanceMode.rawValue, forKey: "appearanceMode")
+    private func save() {
+        UserDefaults.standard.set(currentTheme.id, forKey: Keys.selectedThemeId)
+        UserDefaults.standard.set(appearanceMode.rawValue, forKey: Keys.appearanceMode)
     }
 }
