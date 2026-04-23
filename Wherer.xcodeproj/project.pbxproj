@@ -271,6 +271,7 @@
 				2324F4CD49DD0552F33D2BBA /* SettingsView.swift */,
 			);
 			name = Settings;
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		D342BFC963593D71A2231B94 /* Views */ = {
