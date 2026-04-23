@@ -70,9 +70,9 @@
 		0C0526F5A5468F7552D12C7B /* WhererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhererTests.swift; sourceTree = "<group>"; };
 		1A73B79337643B8856167263 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		21B93D4E582AFEE6A4702B0C /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
-		21E20E03154D961B4C85D03C /* ThemeColors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ThemeColors.swift; path = Wherer/Models/ThemeColors.swift; sourceTree = "<group>"; };
+		21E20E03154D961B4C85D03C /* ThemeColors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ThemeColors.swift; path = ThemeColors.swift; sourceTree = "<group>"; };
 		22E5A75AC322E62A9F78C493 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		2324F4CD49DD0552F33D2BBA /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = Wherer/Views/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		2324F4CD49DD0552F33D2BBA /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		2A8B095F6CD1FDD4736E762E /* SearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchService.swift; sourceTree = "<group>"; };
 		2C1425BB54CD27D6C5DA3F0E /* AppColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppColors.swift; sourceTree = "<group>"; };
 		386C7EDE63C6D3C6A98128DC /* ColorPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPreset.swift; sourceTree = "<group>"; };
@@ -85,7 +85,7 @@
 		58AD970C96619B0E2B9412D0 /* SpaceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceStore.swift; sourceTree = "<group>"; };
 		5E2DE2EA9CD49D26A7E79E62 /* Space+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Space+Extensions.swift"; sourceTree = "<group>"; };
 		6874AAF1965D5FC03CBFD06D /* ItemMiniCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemMiniCardView.swift; sourceTree = "<group>"; };
-		6B12CCE04309007B2653C9A7 /* ThemePickerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ThemePickerView.swift; path = Wherer/Views/Settings/ThemePickerView.swift; sourceTree = "<group>"; };
+		6B12CCE04309007B2653C9A7 /* ThemePickerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ThemePickerView.swift; path = ThemePickerView.swift; sourceTree = "<group>"; };
 		714A4D5F6E2EEAE2E1CA3247 /* SpaceFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceFormView.swift; sourceTree = "<group>"; };
 		79564D9F8105B4FE0B67E74C /* Item+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Item+Extensions.swift"; sourceTree = "<group>"; };
 		7C596835DFD27AC1EB6AC9C5 /* ItemStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemStore.swift; sourceTree = "<group>"; };
@@ -101,15 +101,15 @@
 		BA8AFEA824C979F158582DE4 /* PhotoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoService.swift; sourceTree = "<group>"; };
 		CD9BB13CFB40D3A9C16C56C3 /* WhererApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhererApp.swift; sourceTree = "<group>"; };
 		CF2CC7229FD97BF40A1ED747 /* CategorySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategorySection.swift; sourceTree = "<group>"; };
-		D74E5A72835B048EB77980D5 /* ThemeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ThemeManager.swift; path = Wherer/ViewModels/ThemeManager.swift; sourceTree = "<group>"; };
+		D74E5A72835B048EB77980D5 /* ThemeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ThemeManager.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 		D9E039BC59FA6F718B86D003 /* PhotoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPicker.swift; sourceTree = "<group>"; };
 		DAA361E1430F93D97180D42C /* ItemPhoto+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ItemPhoto+Extensions.swift"; sourceTree = "<group>"; };
 		DB66D8638746EE53A771E0FD /* Wherer.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Wherer.xcdatamodel; sourceTree = "<group>"; };
 		E03D757D99998619BAC3299D /* Wherer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Wherer.entitlements; sourceTree = "<group>"; };
 		F13F4BABDAC2326EEA624D6D /* SpaceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceDetailView.swift; sourceTree = "<group>"; };
-		F3D6C7A7F867516AA08EA210 /* Theme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Theme.swift; path = Wherer/Models/Theme.swift; sourceTree = "<group>"; };
+		F3D6C7A7F867516AA08EA210 /* Theme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Theme.swift; path = Theme.swift; sourceTree = "<group>"; };
 		F7E55999F401AB9159B66812 /* RecentItemsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentItemsSection.swift; sourceTree = "<group>"; };
-		FA5F83A9052786D1B98EB729 /* AppearanceMode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppearanceMode.swift; path = Wherer/Models/AppearanceMode.swift; sourceTree = "<group>"; };
+		FA5F83A9052786D1B98EB729 /* AppearanceMode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppearanceMode.swift; path = AppearanceMode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
