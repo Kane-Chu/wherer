@@ -4,6 +4,7 @@ import CoreData
 struct ContentView: View {
     @StateObject private var spaceStore: SpaceStore
     @StateObject private var itemStore: ItemStore
+    @EnvironmentObject var themeManager: ThemeManager
 
     init(context: NSManagedObjectContext) {
         let store = SpaceStore(context: context)
@@ -26,8 +27,15 @@ struct ContentView: View {
                 }
                 .environmentObject(spaceStore)
                 .environmentObject(itemStore)
+
+            SettingsView()
+                .tabItem {
+                    Label("设置", systemImage: "gearshape.fill")
+                }
+                .environmentObject(themeManager)
         }
-        .accentColor(AppColors.accent)
+        .accentColor(themeManager.effectiveColors.accent)
+        .preferredColorScheme(themeManager.effectiveColorScheme)
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
