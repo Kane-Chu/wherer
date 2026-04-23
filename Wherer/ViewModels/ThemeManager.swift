@@ -4,6 +4,7 @@ import Combine
 class ThemeManager: ObservableObject {
     @Published var currentTheme: Theme
     @Published var appearanceMode: AppearanceMode
+    @Published var systemColorScheme: ColorScheme = .light
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -11,7 +12,7 @@ class ThemeManager: ObservableObject {
         let isDark: Bool
         switch appearanceMode {
         case .auto:
-            isDark = UITraitCollection.current.userInterfaceStyle == .dark
+            isDark = systemColorScheme == .dark
         case .light:
             isDark = false
         case .dark:

@@ -5,6 +5,7 @@ struct ContentView: View {
     @StateObject private var spaceStore: SpaceStore
     @StateObject private var itemStore: ItemStore
     @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var colorScheme
 
     init(context: NSManagedObjectContext) {
         let store = SpaceStore(context: context)
@@ -36,6 +37,9 @@ struct ContentView: View {
         }
         .accentColor(themeManager.effectiveColors.accent)
         .preferredColorScheme(themeManager.effectiveColorScheme)
+        .onChange(of: colorScheme) { newScheme in
+            themeManager.systemColorScheme = newScheme
+        }
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
