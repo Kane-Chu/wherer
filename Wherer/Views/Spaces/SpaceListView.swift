@@ -3,6 +3,7 @@ import SwiftUI
 struct SpaceListView: View {
     @EnvironmentObject var spaceStore: SpaceStore
     @EnvironmentObject var itemStore: ItemStore
+    @EnvironmentObject var themeManager: ThemeManager
     @State private var showingAddSpace = false
     @State private var editingSpace: Space?
     @State private var selectedItemID: ItemIdentifier?
@@ -63,7 +64,7 @@ struct SpaceListView: View {
                     Button(action: { showingAddSpace = true }) {
                         ZStack {
                             Circle()
-                                .fill(AppColors.primaryGradient)
+                                .fill(themeManager.effectiveColors.primaryGradient)
                                 .frame(width: 36, height: 36)
                             Image(systemName: "plus")
                                 .font(.title3.weight(.semibold))
