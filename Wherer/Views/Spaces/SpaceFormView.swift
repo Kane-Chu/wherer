@@ -11,7 +11,8 @@ struct SpaceFormView: View {
 
     private let icons = [
         "house", "bed.double.fill", "book.fill", "sofa.fill",
-        "archivebox.fill", "car.fill", "tree.fill", "cup.and.saucer.fill"
+        "archivebox.fill", "car.fill", "fork.knife", "refrigerator.fill",
+        "shower.fill", "sun.max.fill"
     ]
 
     var body: some View {
