@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ThemeColors: Sendable {
+struct ThemeColors {
     let accent: Color
     let gradientStart: Color
     let gradientEnd: Color
