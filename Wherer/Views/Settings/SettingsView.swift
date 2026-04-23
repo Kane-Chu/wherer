@@ -3,9 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var themeManager: ThemeManager
 
-    private var appVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-    }
+    private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
 
     var body: some View {
         NavigationStack {
