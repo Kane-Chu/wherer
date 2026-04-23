@@ -3,6 +3,7 @@ import SwiftUI
 struct ItemListView: View {
     @EnvironmentObject var itemStore: ItemStore
     @EnvironmentObject var spaceStore: SpaceStore
+    @EnvironmentObject var themeManager: ThemeManager
     @State private var searchQuery = ""
     @State private var selectedItemID: ItemIdentifier?
     @State private var showingAddItem = false
@@ -40,7 +41,7 @@ struct ItemListView: View {
                     Button(action: { showingAddItem = true }) {
                         ZStack {
                             Circle()
-                                .fill(AppColors.primaryGradient)
+                                .fill(themeManager.effectiveColors.primaryGradient)
                                 .frame(width: 36, height: 36)
                             Image(systemName: "plus")
                                 .font(.title3.weight(.semibold))
