@@ -3,6 +3,7 @@ import SwiftUI
 struct SpaceDetailView: View {
     @EnvironmentObject var itemStore: ItemStore
     @EnvironmentObject var spaceStore: SpaceStore
+    @EnvironmentObject var themeManager: ThemeManager
     let space: Space
     @State private var showingAddItem = false
     @State private var editingItem: Item?
@@ -46,6 +47,7 @@ struct SpaceDetailView: View {
 
 struct SpaceDetailItemRowView: View {
     @ObservedObject var item: Item
+    @EnvironmentObject var themeManager: ThemeManager
 
     var body: some View {
         HStack(spacing: 12) {
@@ -79,8 +81,8 @@ struct SpaceDetailItemRowView: View {
                                 .font(.caption2)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 2)
-                                .background(Color.accentColor.opacity(0.12))
-                                .foregroundColor(.accentColor)
+                                .background(themeManager.effectiveColors.tagTint.opacity(themeManager.effectiveColors.tagTintOpacity))
+                                .foregroundColor(themeManager.effectiveColors.accent)
                                 .cornerRadius(10)
                         }
                     }
