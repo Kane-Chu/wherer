@@ -3,6 +3,7 @@ import SwiftUI
 struct ItemDetailView: View {
     @EnvironmentObject var itemStore: ItemStore
     @EnvironmentObject var spaceStore: SpaceStore
+    @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.dismiss) private var dismiss
 
     let itemID: UUID
@@ -142,8 +143,8 @@ struct ItemDetailView: View {
                                 .font(.caption)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 4)
-                                .background(Color.accentColor.opacity(0.12))
-                                .foregroundColor(.accentColor)
+                                .background(themeManager.effectiveColors.tagTint.opacity(themeManager.effectiveColors.tagTintOpacity))
+                                .foregroundColor(themeManager.effectiveColors.accent)
                                 .cornerRadius(12)
                         }
                     }
