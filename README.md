@@ -35,6 +35,9 @@
 - **快速搜索**：通过名称、位置或标签快速定位物品
 - **按空间浏览**：进入空间详情页，查看该空间下的所有物品
 - **最近添加**：首页展示最新添加的物品，方便快速回顾
+- **列表/卡片双视图**：空间页和物品页均支持一键切换列表与卡片展示模式
+- **主题系统**：5 套预设主题色，设置页可一键切换应用整体配色
+- **明暗模式**：支持跟随系统、强制浅色、强制深色三种外观模式
 - **iCloud 同步**：基于 Core Data + CloudKit，数据可在你的 Apple 设备间同步
 
 ## 应用截图
@@ -57,11 +60,12 @@
 
 ```
 Wherer/
-├── Models/              # 数据模型（Space、Item、Category 等）
-├── ViewModels/          # 状态管理（SpaceStore、ItemStore）
+├── Models/              # 数据模型（Space、Item、Category、Theme 等）
+├── ViewModels/          # 状态管理（SpaceStore、ItemStore、ThemeManager）
 ├── Views/               # SwiftUI 视图
 │   ├── Spaces/          # 空间相关页面
 │   ├── Items/           # 物品相关页面
+│   ├── Settings/        # 设置相关页面
 │   ├── Shared/          # 通用组件（搜索栏、表单、图片预览等）
 │   └── Components/      # 首页组件（最近添加）
 ├── Services/            # 业务服务（PhotoService、SearchService）
@@ -70,6 +74,7 @@ Wherer/
 └── WhererApp.swift      # 应用入口
 
 WhererTests/             # 单元测试
+WhererUITests/           # UI 自动化测试
 ```
 
 ## 本地运行
@@ -123,12 +128,12 @@ open Wherer.xcodeproj
 
 项目包含单元测试和 UI 自动化测试：
 
-**单元测试**（覆盖模型、搜索服务和 Store 逻辑）：
+**单元测试**（覆盖模型、搜索服务、Store 逻辑和主题系统）：
 ```bash
 Cmd + U
 ```
 
-**UI 自动化测试**：
+**UI 自动化测试**（覆盖添加物品、取消添加、保存按钮状态、详情页截图、列表模式切换等场景）：
 ```bash
 ./run-ui-tests.sh
 ```
