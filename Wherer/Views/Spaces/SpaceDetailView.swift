@@ -28,8 +28,16 @@ struct SpaceDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { showingAddItem = true }) {
-                    Image(systemName: "plus")
+                    ZStack {
+                        Circle()
+                            .fill(themeManager.effectiveColors.primaryGradient)
+                            .frame(width: 36, height: 36)
+                        Image(systemName: "plus")
+                            .font(.title3.weight(.semibold))
+                            .foregroundColor(.white)
+                    }
                 }
+                .buttonStyle(.plain)
             }
         }
         .sheet(isPresented: $showingAddItem) {
@@ -60,11 +68,11 @@ struct SpaceDetailItemRowView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.systemGray5))
+                    .fill(Color(.systemGray6))
                     .frame(width: 56, height: 56)
                     .overlay(
                         Image(systemName: item.wrappedCategory.icon)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.secondary)
                     )
             }
 
@@ -79,16 +87,21 @@ struct SpaceDetailItemRowView: View {
                         ForEach(item.wrappedTags, id: \.self) { tag in
                             Text(tag)
                                 .font(.caption2)
-                                .padding(.horizontal, 8)
+                                .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(themeManager.effectiveColors.tagTint.opacity(themeManager.effectiveColors.tagTintOpacity))
                                 .foregroundColor(themeManager.effectiveColors.accent)
-                                .cornerRadius(10)
+                                .cornerRadius(8)
                         }
                     }
                 }
             }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

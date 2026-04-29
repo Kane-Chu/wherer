@@ -11,7 +11,6 @@ struct ItemDetailView: View {
     @State private var showingEdit = false
     @State private var showingDeleteConfirm = false
     @State private var previewImage: PreviewImage?
-    @State private var showingActionSheet = false
 
     private var item: Item {
         itemStore.items.first { $0.wrappedId == itemID }!
@@ -93,11 +92,11 @@ struct ItemDetailView: View {
                         previewImage = PreviewImage(image: image)
                     }
             } else {
-                Color(.systemGray5)
+                Color(.systemGray6)
                     .overlay(
                         Image(systemName: item.wrappedCategory.icon)
                             .font(.system(size: 60))
-                            .foregroundColor(.gray)
+                            .foregroundColor(.secondary)
                     )
             }
         }
@@ -117,8 +116,13 @@ struct ItemDetailView: View {
     }
 
     private var moreButton: some View {
-        Button {
-            showingActionSheet = true
+        Menu {
+            Button("编辑物品") {
+                showingEdit = true
+            }
+            Button("删除物品", role: .destructive) {
+                showingDeleteConfirm = true
+            }
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: 18, weight: .semibold))
@@ -161,43 +165,39 @@ struct ItemDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                coverImageSection
-                infoSection
+        if itemStore.items.contains(where: { $0.wrappedId == itemID }) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    coverImageSection
+                    infoSection
+                }
             }
-        }
-        .id(item.photoList.count)
-        .sheet(isPresented: $showingEdit, onDismiss: {
-            photos = item.photoList
-        }) {
-            ItemFormView(space: item.wrappedSpace!, item: item)
-                .environmentObject(itemStore)
-                .environmentObject(spaceStore)
-        }
-        .alert("确认删除？", isPresented: $showingDeleteConfirm) {
-            Button("取消", role: .cancel) {}
-            Button("删除", role: .destructive) {
-                itemStore.deleteItem(item)
-                dismiss()
+            .id(item.photoList.count)
+            .sheet(isPresented: $showingEdit, onDismiss: {
+                photos = item.photoList
+            }) {
+                ItemFormView(space: item.wrappedSpace!, item: item)
+                    .environmentObject(itemStore)
+                    .environmentObject(spaceStore)
             }
-        } message: {
-            Text("删除后将无法恢复")
-        }
-        .fullScreenCover(item: $previewImage) { wrapper in
-            ImagePreviewView(image: wrapper.image)
-        }
-        .onAppear {
-            photos = item.photoList
-        }
-        .confirmationDialog("更多", isPresented: $showingActionSheet, titleVisibility: .hidden) {
-            Button("编辑物品") {
-                showingEdit = true
+            .alert("确认删除？", isPresented: $showingDeleteConfirm) {
+                Button("取消", role: .cancel) {}
+                Button("删除", role: .destructive) {
+                    itemStore.deleteItem(item)
+                    dismiss()
+                }
+            } message: {
+                Text("删除后将无法恢复")
             }
-            Button("删除物品", role: .destructive) {
-                showingDeleteConfirm = true
+            .fullScreenCover(item: $previewImage) { wrapper in
+                ImagePreviewView(image: wrapper.image)
             }
-            Button("取消", role: .cancel) {}
+            .onAppear {
+                photos = item.photoList
+            }
+        } else {
+            Color.clear
+                .onAppear { dismiss() }
         }
     }
 }

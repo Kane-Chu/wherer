@@ -47,10 +47,10 @@ struct ItemFormView: View {
             .alert("确认删除？", isPresented: $showingDeleteConfirm) {
                 Button("取消", role: .cancel) {}
                 Button("删除", role: .destructive) {
+                    dismiss()
                     if let item = item {
                         itemStore.deleteItem(item)
                     }
-                    dismiss()
                 }
             } message: {
                 Text("删除后将无法恢复")
@@ -152,6 +152,7 @@ struct ItemFormView: View {
                                 .cornerRadius(12)
                         }
                     }
+                    .padding(.bottom, 14)
                 }
             }
         }

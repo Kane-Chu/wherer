@@ -58,6 +58,18 @@ class SpaceStore: ObservableObject {
     }
 
     func deleteSpace(_ space: Space) {
+        if let items = space.items as? Set<Item> {
+            for item in items {
+                if let photos = item.photos as? Set<ItemPhoto> {
+                    for photo in photos {
+                        PhotoService.deletePhoto(filename: photo.wrappedFilename)
+                    }
+                }
+                if let filename = item.photoFilename {
+                    PhotoService.deletePhoto(filename: filename)
+                }
+            }
+        }
         context.delete(space)
         saveContext()
         fetchSpaces()
@@ -71,6 +83,7 @@ class SpaceStore: ObservableObject {
             ("客厅", "sofa.fill", ColorPreset.allPresets[2].startHex),
             ("储物间", "archivebox.fill", ColorPreset.allPresets[3].startHex)
         ]
+        var createdSpaces: [Space] = []
         for (name, icon, color) in defaults {
             let space = Space(context: context)
             space.id = UUID()
@@ -78,10 +91,42 @@ class SpaceStore: ObservableObject {
             space.icon = icon
             space.colorHex = color
             space.createdAt = Date()
+            createdSpaces.append(space)
         }
         saveContext()
         fetchSpaces()
+
+        #if targetEnvironment(simulator)
+        seedSampleItems(spaces: createdSpaces)
+        #endif
     }
+
+    #if targetEnvironment(simulator)
+    private func seedSampleItems(spaces: [Space]) {
+        let sampleItems: [(String, String, Space, Category, String)] = [
+            ("枕头", "床头柜上", spaces[0], .other, "睡眠,舒适"),
+            ("台灯", "书桌角落", spaces[0], .other, "照明"),
+            ("MacBook", "桌面上", spaces[1], .electronics, "工作,苹果"),
+            ("耳机", "抽屉里", spaces[1], .electronics, "音频"),
+            ("遥控器", "茶几上", spaces[2], .electronics, "电视"),
+            ("抱枕", "沙发上", spaces[2], .other, "装饰"),
+            ("行李箱", "角落", spaces[3], .other, "出行"),
+            ("工具箱", "架子上", spaces[3], .other, "维修"),
+        ]
+        for (name, location, space, category, tags) in sampleItems {
+            let item = Item(context: context)
+            item.id = UUID()
+            item.name = name
+            item.location = location
+            item.space = space
+            item.category = category.rawValue
+            item.tags = tags
+            item.createdAt = Date()
+            item.updatedAt = Date()
+        }
+        saveContext()
+    }
+    #endif
 
     private func saveContext() {
         guard context.hasChanges else { return }

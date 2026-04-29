@@ -41,11 +41,11 @@ struct RecentItemRowView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.systemGray5))
+                    .fill(Color(.systemGray6))
                     .frame(width: 56, height: 56)
                     .overlay(
                         Image(systemName: item.wrappedCategory.icon)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.secondary)
                     )
             }
 
@@ -57,7 +57,11 @@ struct RecentItemRowView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
