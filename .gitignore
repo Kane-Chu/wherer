@@ -1,0 +1,7 @@
+.worktrees/
+.claude/
+.superpowers/
+build/
+DerivedData/
+.screenshots/
+simulator_screenshots/
