@@ -79,7 +79,9 @@ platform :ios do
       languages: ["zh-Hans"],
       output_directory: "fastlane/screenshots",
       clear_previous_screenshots: true,
-      dark_mode: false
+      dark_mode: false,
+      skip_helper_version_check: true,
+      ios_version: "18.3.1"
     )
     UI.success("✅ 截图已保存到 fastlane/screenshots/")
   end
