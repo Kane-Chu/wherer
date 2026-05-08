@@ -1,0 +1,4 @@
+app_identifier("com.kane.wherer")
+apple_id(ENV["FASTLANE_APPLE_ID"] || "your-apple-id@example.com")
+itc_team_id(ENV["FASTLANE_ITC_TEAM_ID"] || "")
+team_id("NP4F3CYKZD")

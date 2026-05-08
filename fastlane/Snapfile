@@ -1,0 +1,23 @@
+# 截图设备列表
+devices([
+  "iPhone 16",
+  "iPhone 16 Pro Max",
+  "iPhone 16 Plus"
+])
+
+# 语言
+languages([
+  "zh-Hans"
+])
+
+# 输出目录
+output_directory("./fastlane/screenshots")
+
+# 每次运行前清空旧截图
+clear_previous_screenshots(true)
+
+# 是否覆盖状态栏（显示 9:41 等）
+override_status_bar(true)
+
+# 暗色模式（可选）
+dark_mode(false)

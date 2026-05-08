@@ -5,3 +5,17 @@ build/
 DerivedData/
 .screenshots/
 simulator_screenshots/
+
+# Xcode user data
+*.xcuserstate
+
+# Backup files
+*_backup.png
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+fastlane/.env
+fastlane/README.md
