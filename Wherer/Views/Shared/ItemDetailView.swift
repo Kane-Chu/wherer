@@ -112,6 +112,7 @@ struct ItemDetailView: View {
                 .background(.ultraThinMaterial)
                 .clipShape(Circle())
         }
+        .accessibilityIdentifier("itemDetailBackButton")
     }
 
     private var moreButton: some View {

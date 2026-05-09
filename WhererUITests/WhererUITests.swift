@@ -20,17 +20,17 @@ final class WhererUITests: XCTestCase {
     // MARK: - 辅助方法
 
     private func addSpace(name: String, iconIndex: Int) {
-        let addButton = app.navigationBars["放哪了"].buttons.firstMatch
+        let addButton = app.buttons["addSpaceButton"]
         XCTAssertTrue(addButton.waitForExistence(timeout: 3))
         addButton.tap()
         sleep(1)
 
-        let nameField = app.textFields["空间名称"]
+        let nameField = app.textFields["spaceNameField"]
         XCTAssertTrue(nameField.waitForExistence(timeout: 3))
         nameField.tap()
         nameField.typeText(name)
 
-        let saveButton = app.buttons["保存"]
+        let saveButton = app.buttons["spaceFormSaveButton"]
         XCTAssertTrue(saveButton.waitForExistence(timeout: 3))
         saveButton.tap()
         sleep(1)
@@ -130,8 +130,8 @@ final class WhererUITests: XCTestCase {
             snapshot("06_ItemDetail")
 
             // 返回
-            if app.buttons["返回"].waitForExistence(timeout: 3) {
-                app.buttons["返回"].tap()
+            if app.buttons["itemDetailBackButton"].waitForExistence(timeout: 3) {
+                app.buttons["itemDetailBackButton"].tap()
                 sleep(1)
             }
         }

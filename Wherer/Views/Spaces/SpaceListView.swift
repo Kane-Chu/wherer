@@ -147,6 +147,7 @@ struct SpaceListView: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("addSpaceButton")
                 }
             }
             .navigationDestination(for: Space.self) { space in

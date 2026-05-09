@@ -20,6 +20,7 @@ struct SpaceFormView: View {
             Form {
                 Section("基本信息") {
                     TextField("空间名称", text: $name)
+                        .accessibilityIdentifier("spaceNameField")
                     Picker("图标", selection: $icon) {
                         ForEach(icons, id: \.self) { icon in
                             Label(icon, systemImage: icon).tag(icon)
@@ -35,6 +36,7 @@ struct SpaceFormView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") { dismiss() }
+                        .accessibilityIdentifier("spaceFormCancelButton")
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
@@ -46,6 +48,7 @@ struct SpaceFormView: View {
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .accessibilityIdentifier("spaceFormSaveButton")
                 }
             }
             .onAppear {
