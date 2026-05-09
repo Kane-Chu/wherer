@@ -73,21 +73,27 @@ platform :ios do
 
   desc "Generate App Store screenshots"
   lane :screenshots do
-    devices = ["iPhone 16", "iPhone 16 Pro Max"]
+    devices = {
+      "iPhone 16" => "230A0533-8EB5-4530-B8F9-476497764A77",
+      "iPhone 16 Pro Max" => "521635DA-DD93-43DC-BEE1-1A7A4E6E9E83"
+    }
     output_dir = "fastlane/screenshots"
 
     # 清空旧截图
     FileUtils.rm_rf(output_dir)
     FileUtils.mkdir_p(output_dir)
 
-    devices.each do |device|
-      UI.message("📱 正在使用 #{device} 截图...")
+    devices.each do |device_name, udid|
+      UI.message("📱 正在使用 #{device_name} 截图...")
+
+      # 启动模拟器
+      sh("xcrun simctl boot #{udid} 2>/dev/null || true")
 
       # 直接用 xcodebuild 运行 UI 测试，绕过 scan 的 showBuildSettings 超时问题
-      sh("cd .. && xcodebuild test -scheme Wherer -project Wherer.xcodeproj -destination 'platform=iOS Simulator,name=#{device}' -only-testing:WhererUITests/WhererUITests/testScreenshots")
+      sh("cd .. && xcodebuild test -scheme Wherer -project Wherer.xcodeproj -destination 'platform=iOS Simulator,id=#{udid}' -only-testing:WhererUITests/WhererUITests/testScreenshots")
 
       # 从模拟器提取截图
-      extract_screenshots(device: device, output_dir: output_dir)
+      extract_screenshots(udid: udid, device_name: device_name, output_dir: output_dir)
     end
 
     # 生成 HTML 预览
@@ -110,28 +116,9 @@ platform :ios do
   # ========== 私有方法 ==========
 
   private_lane :extract_screenshots do |options|
-    device = options[:device]
+    udid = options[:udid]
+    device_name = options[:device_name]
     output_dir = options[:output_dir]
-
-    # 获取模拟器 UDID
-    simctl_output = Actions.sh("xcrun simctl list devices available --json", log: false)
-    devices_json = JSON.parse(simctl_output)
-
-    udid = nil
-    devices_json["devices"].each do |runtime, devs|
-      devs.each do |dev|
-        if dev["name"] == device && dev["isAvailable"]
-          udid = dev["udid"]
-          break
-        end
-      end
-      break if udid
-    end
-
-    if udid.nil?
-      UI.error("❌ 找不到模拟器: #{device}")
-      next
-    end
 
     # 查找 app container
     begin
@@ -148,12 +135,12 @@ platform :ios do
     end
 
     if container_path.nil? || !Dir.exist?(container_path)
-      UI.error("❌ 找不到截图目录: #{device}")
+      UI.error("❌ 找不到截图目录: #{device_name}")
       next
     end
 
     # 复制截图到输出目录
-    device_dir = File.join(output_dir, device.gsub(" ", ""))
+    device_dir = File.join(output_dir, device_name.gsub(" ", ""))
     FileUtils.mkdir_p(device_dir)
 
     Dir.glob("#{container_path}/**/*.png").each do |src|
