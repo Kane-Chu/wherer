@@ -128,7 +128,6 @@ struct ItemListView: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    .disabled(spaceStore.spaces.isEmpty)
                     .accessibilityIdentifier("addItemButton")
                 }
             }

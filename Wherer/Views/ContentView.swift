@@ -40,8 +40,5 @@ struct ContentView: View {
         .onChange(of: colorScheme) { newScheme in
             themeManager.systemColorScheme = newScheme
         }
-        .onTapGesture {
-            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-        }
     }
 }

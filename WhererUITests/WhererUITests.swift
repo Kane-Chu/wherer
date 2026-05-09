@@ -13,49 +13,9 @@ final class WhererUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
+        app.launchArguments = ["-screenshotData"]
         setupSnapshot(app)
         app.launch()
-    }
-
-    // MARK: - 辅助方法
-
-    private func addSpace(name: String, iconIndex: Int) {
-        let addButton = app.buttons["addSpaceButton"]
-        XCTAssertTrue(addButton.waitForExistence(timeout: 3))
-        addButton.tap()
-        sleep(1)
-
-        let nameField = app.textFields["spaceNameField"]
-        XCTAssertTrue(nameField.waitForExistence(timeout: 3))
-        nameField.tap()
-        nameField.typeText(name)
-
-        let saveButton = app.buttons["spaceFormSaveButton"]
-        XCTAssertTrue(saveButton.waitForExistence(timeout: 3))
-        saveButton.tap()
-        sleep(1)
-    }
-
-    private func addItem(name: String, location: String) {
-        let addButton = app.buttons["addItemButton"]
-        XCTAssertTrue(addButton.waitForExistence(timeout: 3))
-        addButton.tap()
-        sleep(1)
-
-        let nameField = app.textFields["itemNameField"]
-        XCTAssertTrue(nameField.waitForExistence(timeout: 3))
-        nameField.tap()
-        nameField.typeText(name)
-
-        let locationField = app.textFields["itemLocationField"]
-        XCTAssertTrue(locationField.waitForExistence(timeout: 3))
-        locationField.tap()
-        locationField.typeText(location)
-
-        let saveButton = app.buttons["itemFormSaveButton"]
-        XCTAssertTrue(saveButton.waitForExistence(timeout: 3))
-        saveButton.tap()
-        sleep(1)
     }
 
     private func switchToTab(_ name: String) {
@@ -70,26 +30,7 @@ final class WhererUITests: XCTestCase {
     func testScreenshots() throws {
         sleep(2)
 
-        // ========== 准备数据 ==========
-
-        // 添加空间
-        addSpace(name: "卧室", iconIndex: 1)
-        addSpace(name: "客厅", iconIndex: 3)
-        addSpace(name: "厨房", iconIndex: 6)
-
-        // 切换到物品页，添加物品
-        switchToTab("物品")
-
-        addItem(name: "手机充电器", location: "床头柜第二层")
-        addItem(name: "护照", location: "客厅电视柜抽屉")
-        addItem(name: "感冒药", location: "卧室衣柜上层")
-        addItem(name: "笔记本电脑", location: "客厅茶几下面")
-        addItem(name: "身份证", location: "卧室书桌抽屉")
-
-        // ========== 开始截图 ==========
-
         // 1. 空间首页 - 网格模式
-        switchToTab("空间")
         snapshot("01_Spaces_Grid")
 
         // 2. 空间列表模式
@@ -119,7 +60,7 @@ final class WhererUITests: XCTestCase {
         snapshot("05_AddItem")
 
         // 返回
-        app.buttons["itemFormCancelButton"].tap()
+        app.navigationBars["添加物品"].buttons["取消"].tap()
         sleep(1)
 
         // 6. 物品详情页
