@@ -28,6 +28,7 @@ struct ItemListView: View {
                                 .foregroundColor(.primary)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityIdentifier("viewToggleButton")
                     }
                 }
                 .padding()

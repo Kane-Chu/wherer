@@ -29,6 +29,7 @@ struct SpaceListView: View {
                                 .foregroundColor(.primary)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityIdentifier("viewToggleButton")
                     }
                 }
                 .padding()

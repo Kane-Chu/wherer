@@ -34,9 +34,9 @@ final class WhererUITests: XCTestCase {
         snapshot("01_Spaces_Grid")
 
         // 2. 空间列表模式
-        let listToggle = app.buttons["list.bullet"]
-        if listToggle.waitForExistence(timeout: 3) {
-            listToggle.tap()
+        let viewToggle = app.buttons["viewToggleButton"]
+        if viewToggle.waitForExistence(timeout: 3) {
+            viewToggle.tap()
             sleep(1)
             snapshot("02_Spaces_List")
         }
@@ -46,8 +46,8 @@ final class WhererUITests: XCTestCase {
         snapshot("03_Items_Grid")
 
         // 4. 物品列表模式
-        if listToggle.waitForExistence(timeout: 3) {
-            listToggle.tap()
+        if viewToggle.waitForExistence(timeout: 3) {
+            viewToggle.tap()
             sleep(1)
             snapshot("04_Items_List")
         }
