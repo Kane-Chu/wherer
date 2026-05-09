@@ -83,14 +83,8 @@ platform :ios do
     devices.each do |device|
       UI.message("📱 正在使用 #{device} 截图...")
 
-      # 运行 UI 测试
-      scan(
-        scheme: "Wherer",
-        destination: "platform=iOS Simulator,name=#{device}",
-        only_testing: ["WhererUITests/WhererUITests/testScreenshots"],
-        buildlog_path: "fastlane/logs",
-        derived_data_path: "fastlane/derived"
-      )
+      # 直接用 xcodebuild 运行 UI 测试，绕过 scan 的 showBuildSettings 超时问题
+      sh("xcodebuild test -scheme Wherer -destination 'platform=iOS Simulator,name=#{device}' -only-testing:WhererUITests/WhererUITests/testScreenshots")
 
       # 从模拟器提取截图
       extract_screenshots(device: device, output_dir: output_dir)
