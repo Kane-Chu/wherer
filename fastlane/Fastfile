@@ -75,7 +75,7 @@ platform :ios do
   lane :screenshots do
     snapshot(
       scheme: "Wherer",
-      devices: ["iPhone 16", "iPhone 16 Pro Max"],
+      destination: ["platform=iOS Simulator,name=iPhone 16,OS=18.3.1", "platform=iOS Simulator,name=iPhone 16 Pro Max,OS=18.3.1"],
       languages: ["zh-Hans"],
       output_directory: "fastlane/screenshots",
       clear_previous_screenshots: true,

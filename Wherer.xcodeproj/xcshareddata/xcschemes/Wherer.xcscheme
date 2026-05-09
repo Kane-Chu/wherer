@@ -52,17 +52,6 @@
       </MacroExpansion>
       <Testables>
          <TestableReference
-            skipped = "YES"
-            parallelizable = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E79B56B3C22BA3C2A8A4059F"
-               BuildableName = "WhererTests.xctest"
-               BlueprintName = "WhererTests"
-               ReferencedContainer = "container:Wherer.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
             skipped = "NO"
             parallelizable = "YES">
             <BuildableReference
