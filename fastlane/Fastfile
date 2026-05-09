@@ -73,16 +73,33 @@ platform :ios do
 
   desc "Generate App Store screenshots"
   lane :screenshots do
-    snapshot(
-      scheme: "Wherer",
-      devices: ["iPhone 16", "iPhone 16 Pro Max"],
-      languages: ["zh-Hans"],
-      output_directory: "fastlane/screenshots",
-      clear_previous_screenshots: true,
-      dark_mode: false,
-      skip_helper_version_check: true
-    )
-    UI.success("✅ 截图已保存到 fastlane/screenshots/")
+    devices = ["iPhone 16", "iPhone 16 Pro Max"]
+    output_dir = "fastlane/screenshots"
+
+    # 清空旧截图
+    FileUtils.rm_rf(output_dir)
+    FileUtils.mkdir_p(output_dir)
+
+    devices.each do |device|
+      UI.message("📱 正在使用 #{device} 截图...")
+
+      # 运行 UI 测试
+      scan(
+        scheme: "Wherer",
+        destination: "platform=iOS Simulator,name=#{device}",
+        only_testing: ["WhererUITests/WhererUITests/testScreenshots"],
+        buildlog_path: "fastlane/logs",
+        derived_data_path: "fastlane/derived"
+      )
+
+      # 从模拟器提取截图
+      extract_screenshots(device: device, output_dir: output_dir)
+    end
+
+    # 生成 HTML 预览
+    generate_screenshots_html(output_dir)
+
+    UI.success("✅ 截图已保存到 #{output_dir}/")
   end
 
   desc "Increment build number and commit"
@@ -94,5 +111,104 @@ platform :ios do
     git_commit(path: "Wherer.xcodeproj/project.pbxproj", message: "chore: bump build number to #{build_number}")
 
     UI.success("✅ Build number bumped to #{build_number}")
+  end
+
+  # ========== 私有方法 ==========
+
+  private_lane :extract_screenshots do |options|
+    device = options[:device]
+    output_dir = options[:output_dir]
+
+    # 获取模拟器 UDID
+    simctl_output = Actions.sh("xcrun simctl list devices available --json", log: false)
+    devices_json = JSON.parse(simctl_output)
+
+    udid = nil
+    devices_json["devices"].each do |runtime, devs|
+      devs.each do |dev|
+        if dev["name"] == device && dev["isAvailable"]
+          udid = dev["udid"]
+          break
+        end
+      end
+      break if udid
+    end
+
+    if udid.nil?
+      UI.error("❌ 找不到模拟器: #{device}")
+      next
+    end
+
+    # 查找 app container
+    begin
+      container_output = Actions.sh("xcrun simctl get_app_container #{udid} com.kane.wherer data 2>/dev/null || echo ''", log: false)
+    rescue
+      container_output = ""
+    end
+
+    if container_output.strip.empty?
+      # 模拟器可能已关闭，尝试直接从文件系统查找
+      container_path = Dir.glob("#{ENV['HOME']}/Library/Developer/CoreSimulator/Devices/#{udid}/data/Containers/Data/Application/*/Documents/screenshots").first
+    else
+      container_path = "#{container_output.strip}/Documents/screenshots"
+    end
+
+    if container_path.nil? || !Dir.exist?(container_path)
+      UI.error("❌ 找不到截图目录: #{device}")
+      next
+    end
+
+    # 复制截图到输出目录
+    device_dir = File.join(output_dir, device.gsub(" ", ""))
+    FileUtils.mkdir_p(device_dir)
+
+    Dir.glob("#{container_path}/**/*.png").each do |src|
+      rel = src.sub("#{container_path}/", "")
+      dst = File.join(device_dir, rel)
+      FileUtils.mkdir_p(File.dirname(dst))
+      FileUtils.cp(src, dst)
+      UI.message("   📸 #{rel}")
+    end
+  end
+
+  private_lane :generate_screenshots_html do |options|
+    output_dir = options[:output_dir]
+    html_path = File.join(output_dir, "screenshots.html")
+
+    screenshots = Dir.glob("#{output_dir}/**/*.png").sort
+
+    rows = screenshots.map do |path|
+      rel = path.sub("#{output_dir}/", "")
+      name = File.basename(path, ".png")
+      %Q{<tr><td>#{name}</td><td><img src="#{rel}" width="300"></td></tr>}
+    end.join("\n")
+
+    html = <<~HTML
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>App Store Screenshots</title>
+        <style>
+          body { font-family: -apple-system, sans-serif; margin: 20px; background: #f5f5f5; }
+          h1 { font-size: 24px; margin-bottom: 20px; }
+          table { border-collapse: collapse; width: 100%; background: white; }
+          th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+          th { background: #333; color: white; }
+          img { border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        </style>
+      </head>
+      <body>
+        <h1>App Store Screenshots</h1>
+        <table>
+          <tr><th>名称</th><th>预览</th></tr>
+          #{rows}
+        </table>
+      </body>
+      </html>
+    HTML
+
+    File.write(html_path, html)
+    UI.message("📝 预览文件: #{html_path}")
   end
 end

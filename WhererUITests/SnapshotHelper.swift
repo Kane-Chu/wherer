@@ -12,8 +12,6 @@ func snapshot(_ name: String, timeWaitingForIdle timeout: TimeInterval = 20) {
     let screenshot = app.windows.firstMatch.screenshot()
     guard let simulator = ProcessInfo().environment["SIMULATOR_DEVICE_NAME"], let language = Locale.current.languageCode else { return }
     let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        .deletingLastPathComponent()
-        .appendingPathComponent("tmp")
         .appendingPathComponent("screenshots")
         .appendingPathComponent(language)
         .appendingPathComponent(simulator.replacingOccurrences(of: " ", with: ""))
