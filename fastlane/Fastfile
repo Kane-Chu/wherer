@@ -90,7 +90,7 @@ platform :ios do
       sh("xcrun simctl boot #{udid} 2>/dev/null || true")
 
       # 直接用 xcodebuild 运行 UI 测试，绕过 scan 的 showBuildSettings 超时问题
-      sh("cd .. && xcodebuild test -scheme Wherer -project Wherer.xcodeproj -destination 'platform=iOS Simulator,id=#{udid}' -only-testing:WhererUITests/WhererUITests/testScreenshots")
+      sh("cd .. && xcodebuild test -scheme Wherer -project Wherer.xcodeproj -configuration Release -destination 'platform=iOS Simulator,id=#{udid}' -only-testing:WhererUITests/WhererUITests/testScreenshots")
 
       # 从模拟器提取截图
       extract_screenshots(udid: udid, device_name: device_name, output_dir: output_dir)
