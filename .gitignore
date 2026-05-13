@@ -16,6 +16,8 @@ simulator_screenshots/
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
+fastlane/screenshots/screenshots.html
+fastlane/derived/
 fastlane/test_output
 fastlane/.env
 fastlane/README.md
