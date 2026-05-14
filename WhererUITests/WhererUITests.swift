@@ -64,7 +64,7 @@ final class WhererUITests: XCTestCase {
         sleep(1)
 
         // 6. 物品详情页
-        let firstItem = app.staticTexts["手机充电器"]
+        let firstItem = app.staticTexts["电脑"]
         if firstItem.waitForExistence(timeout: 3) {
             firstItem.tap()
             sleep(1)
