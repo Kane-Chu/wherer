@@ -96,6 +96,9 @@ platform :ios do
       extract_screenshots(udid: udid, device_name: device_name, output_dir: output_dir)
     end
 
+    # 调整截图尺寸到 App Store 标准
+    resize_screenshots_for_app_store(output_dir)
+
     # 生成 HTML 预览
     generate_screenshots_html(output_dir)
 
@@ -149,6 +152,32 @@ platform :ios do
       FileUtils.mkdir_p(File.dirname(dst))
       FileUtils.cp(src, dst)
       UI.message("   📸 #{rel}")
+    end
+  end
+
+  private_lane :resize_screenshots_for_app_store do |options|
+    output_dir = options[:output_dir]
+
+    # App Store 6.5 英寸竖屏标准尺寸
+    target_w = 1284
+    target_h = 2778
+
+    Dir.glob("#{output_dir}/**/*.png").each do |path|
+      img = MiniMagick::Image.open(path)
+      w = img.width
+      h = img.height
+
+      next if w == target_w && h == target_h
+
+      # 等比缩放到目标高度，居中裁剪宽度
+      img.combine_options do |c|
+        c.resize("#{target_w}x#{target_h}^")
+        c.gravity("center")
+        c.crop("#{target_w}x#{target_h}+0+0")
+      end
+      img.write(path)
+
+      UI.message("   📐 #{File.basename(path)} resized to #{target_w}x#{target_h}")
     end
   end
 
