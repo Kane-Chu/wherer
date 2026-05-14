@@ -13,7 +13,7 @@ final class WhererUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
-        app.launchArguments = ["-screenshotData"]
+        app.launchArguments = ["-resetData", "-screenshotData"]
         setupSnapshot(app)
         app.launch()
     }
