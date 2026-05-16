@@ -58,7 +58,7 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
-        MARKETING_VERSION: "1.0.0"
+        MARKETING_VERSION: "1.0.1"
         PRODUCT_BUNDLE_IDENTIFIER: com.kane.wherer
         PRODUCT_MODULE_NAME: Wherer
         PRODUCT_NAME: 放哪了
@@ -89,7 +89,7 @@ targets:
         CURRENT_PROJECT_VERSION: 3
         DEVELOPMENT_TEAM: ""
         GENERATE_INFOPLIST_FILE: YES
-        MARKETING_VERSION: "1.0.0"
+        MARKETING_VERSION: "1.0.1"
         PRODUCT_BUNDLE_IDENTIFIER: com.kane.wherer.tests
         PRODUCT_NAME: $(TARGET_NAME)
         SDKROOT: iphoneos
@@ -112,7 +112,7 @@ targets:
         DEVELOPMENT_TEAM: NP4F3CYKZD
         GENERATE_INFOPLIST_FILE: YES
         IPHONEOS_DEPLOYMENT_TARGET: "17.0"
-        MARKETING_VERSION: "1.0.0"
+        MARKETING_VERSION: "1.0.1"
         PRODUCT_BUNDLE_IDENTIFIER: com.kane.wherer.WhererUITests
         PRODUCT_NAME: $(TARGET_NAME)
         SDKROOT: iphoneos
