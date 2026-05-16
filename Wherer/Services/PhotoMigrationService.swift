@@ -26,10 +26,10 @@ struct PhotoMigrationService {
             }
             if migrated > 0 {
                 try context.save()
-                print("Migrated \(migrated) photos to Core Data binary storage")
+                AppLogger.info("Migrated \(migrated) photos to Core Data binary storage")
             }
         } catch {
-            print("Photo migration failed: \(error)")
+            AppLogger.error("Photo migration failed: \(error)")
         }
     }
 
@@ -52,10 +52,10 @@ struct PhotoMigrationService {
             }
             if !items.isEmpty {
                 try context.save()
-                print("Migrated \(items.count) legacy cover photos")
+                AppLogger.info("Migrated \(items.count) legacy cover photos")
             }
         } catch {
-            print("Legacy photo migration failed: \(error)")
+            AppLogger.error("Legacy photo migration failed: \(error)")
         }
     }
 }

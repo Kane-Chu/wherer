@@ -302,13 +302,18 @@ struct ItemFormView: View {
         name.trimmingCharacters(in: .whitespaces).isEmpty || selectedSpace == nil
     }
 
+    private var safeCoverIndex: Int {
+        guard !selectedImages.isEmpty else { return 0 }
+        return min(max(coverIndex, 0), selectedImages.count - 1)
+    }
+
     private func saveItem() {
         guard let targetSpace = selectedSpace else { return }
         var imagesToSave = selectedImages
         if imagesToSave.isEmpty, let pending = pickerImage {
             imagesToSave = [pending]
         }
-        let cover = imagesToSave.isEmpty ? nil : coverIndex
+        let cover = imagesToSave.isEmpty ? nil : min(max(coverIndex, 0), imagesToSave.count - 1)
         if let item = item {
             itemStore.updateItem(item, name: name, location: location, space: targetSpace, category: category, tags: tags, images: imagesToSave, coverIndex: cover)
         } else {
@@ -467,7 +472,7 @@ struct ItemFormView: View {
     @ViewBuilder
     private var previewContent: some View {
         if !selectedImages.isEmpty {
-            Image(uiImage: selectedImages[coverIndex])
+            Image(uiImage: selectedImages[safeCoverIndex])
                 .resizable()
                 .scaledToFill()
                 .frame(height: 160)

@@ -5,9 +5,11 @@ enum PhotoServiceError: Error {
 }
 
 struct PhotoService {
+    private static let maxImageDimension: CGFloat = 1600
+
     static func jpegData(from image: UIImage) throws -> Data {
-        let normalized = normalizeImage(image)
-        guard let data = normalized.jpegData(compressionQuality: 0.85) else {
+        let prepared = resizeIfNeeded(normalizeImage(image))
+        guard let data = prepared.jpegData(compressionQuality: 0.85) else {
             throw PhotoServiceError.invalidImage
         }
         return data
@@ -42,5 +44,19 @@ struct PhotoService {
         let normalized = UIGraphicsGetImageFromCurrentImageContext() ?? image
         UIGraphicsEndImageContext()
         return normalized
+    }
+
+    private static func resizeIfNeeded(_ image: UIImage) -> UIImage {
+        let longestSide = max(image.size.width, image.size.height)
+        guard longestSide > maxImageDimension else { return image }
+
+        let scale = maxImageDimension / longestSide
+        let targetSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: targetSize, format: format)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
     }
 }

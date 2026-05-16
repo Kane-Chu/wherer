@@ -1,10 +1,37 @@
 #!/bin/bash
 set -e
 
-DESTINATION="id=82305935-F792-49A9-9D4D-89305FF7A62F"
 DERIVED_DATA="build"
 SCHEME="Wherer"
 BUNDLE_ID="com.kane.wherer"
+
+find_simulator_id() {
+    if [ -n "${SIMULATOR_ID:-}" ]; then
+        echo "$SIMULATOR_ID"
+        return 0
+    fi
+
+    local preferred_names=("iPhone 17 Pro" "iPhone 16 Pro Max" "iPhone 16" "iPhone 15")
+    local name udid
+    for name in "${preferred_names[@]}"; do
+        udid=$(xcrun simctl list devices available "$name" 2>/dev/null | awk -F '[()]' '/Booted|Shutdown/ { print $2; exit }')
+        if [ -n "$udid" ]; then
+            echo "$udid"
+            return 0
+        fi
+    done
+
+    xcrun simctl list devices available 2>/dev/null | awk -F '[()]' '/iPhone/ && /Booted|Shutdown/ { print $2; exit }'
+}
+
+SIMULATOR_ID=$(find_simulator_id)
+if [ -z "$SIMULATOR_ID" ]; then
+    echo "❌ 错误：未找到可用 iPhone 模拟器。请先在 Xcode 安装 iOS Simulator runtime。"
+    exit 1
+fi
+
+DESTINATION="id=$SIMULATOR_ID"
+DEVICE_NAME=$(xcrun simctl list devices available 2>/dev/null | awk -v id="$SIMULATOR_ID" 'index($0, id) { sub(/^[[:space:]]*/, "", $0); sub(/[[:space:]]\\(.*/, "", $0); print; exit }')
 
 echo "=========================================="
 echo "🧪 Wherer UI 自动化测试"
@@ -22,7 +49,7 @@ sleep 2
 
 echo "🔨 编译并运行 UI 测试..."
 echo "   Scheme:   $SCHEME"
-echo "   Device:   iPhone 17 Pro (iOS 26.4)"
+echo "   Device:   ${DEVICE_NAME:-$SIMULATOR_ID}"
 echo ""
 
 xcodebuild test \

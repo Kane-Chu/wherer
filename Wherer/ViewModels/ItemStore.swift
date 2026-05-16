@@ -5,6 +5,7 @@ import UIKit
 class ItemStore: ObservableObject {
     @Published var items: [Item] = []
     @Published var searchQuery: String = ""
+    @Published var lastErrorMessage: String?
     private let context: NSManagedObjectContext
 
     init(context: NSManagedObjectContext) {
@@ -17,8 +18,10 @@ class ItemStore: ObservableObject {
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Item.createdAt, ascending: false)]
         do {
             items = try context.fetch(request)
+            lastErrorMessage = nil
         } catch {
-            print("Failed to fetch items: \(error)")
+            lastErrorMessage = "物品读取失败，请稍后重试。"
+            AppLogger.error("Failed to fetch items: \(error)")
             items = []
         }
     }
@@ -93,7 +96,7 @@ class ItemStore: ObservableObject {
     }
 
     private func syncPhotos(for item: Item, images: [UIImage], coverIndex: Int?) {
-        let effectiveCover = coverIndex ?? 0
+        let effectiveCover = normalizedCoverIndex(coverIndex, imageCount: images.count)
         for (index, image) in images.enumerated() {
             do {
                 let photo = ItemPhoto(context: context)
@@ -104,7 +107,8 @@ class ItemStore: ObservableObject {
                 photo.createdAt = Date()
                 photo.item = item
             } catch {
-                print("Failed to save photo: \(error)")
+                lastErrorMessage = "照片保存失败，请重新选择照片。"
+                AppLogger.error("Failed to save photo: \(error)")
             }
         }
     }
@@ -113,8 +117,16 @@ class ItemStore: ObservableObject {
         guard context.hasChanges else { return }
         do {
             try context.save()
+            lastErrorMessage = nil
         } catch {
-            print("Failed to save context: \(error)")
+            lastErrorMessage = "保存失败，请稍后重试。"
+            AppLogger.error("Failed to save context: \(error)")
         }
+    }
+
+    private func normalizedCoverIndex(_ coverIndex: Int?, imageCount: Int) -> Int? {
+        guard imageCount > 0 else { return nil }
+        let requested = coverIndex ?? 0
+        return min(max(requested, 0), imageCount - 1)
     }
 }

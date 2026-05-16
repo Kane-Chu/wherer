@@ -22,13 +22,17 @@ final class WhererUITests: XCTestCase {
         let tab = app.tabBars.buttons[name]
         XCTAssertTrue(tab.waitForExistence(timeout: 3))
         tab.tap()
-        sleep(1)
+        XCTAssertTrue(tab.waitForExistence(timeout: 3))
+    }
+
+    private func waitForScreenToSettle() {
+        _ = app.wait(for: .runningForeground, timeout: 3)
     }
 
     // MARK: - 截图测试
 
     func testScreenshots() throws {
-        sleep(2)
+        waitForScreenToSettle()
 
         // 1. 空间首页 - 网格模式
         snapshot("01_Spaces_Grid")
@@ -37,7 +41,7 @@ final class WhererUITests: XCTestCase {
         let viewToggle = app.buttons["viewToggleButton"]
         if viewToggle.waitForExistence(timeout: 3) {
             viewToggle.tap()
-            sleep(1)
+            waitForScreenToSettle()
             snapshot("02_Spaces_List")
         }
 
@@ -48,7 +52,7 @@ final class WhererUITests: XCTestCase {
         // 4. 物品列表模式
         if viewToggle.waitForExistence(timeout: 3) {
             viewToggle.tap()
-            sleep(1)
+            waitForScreenToSettle()
             snapshot("04_Items_List")
         }
 
@@ -56,24 +60,24 @@ final class WhererUITests: XCTestCase {
         let addItemButton = app.buttons["addItemButton"]
         XCTAssertTrue(addItemButton.waitForExistence(timeout: 3))
         addItemButton.tap()
-        sleep(1)
+        XCTAssertTrue(app.navigationBars["添加物品"].waitForExistence(timeout: 3))
         snapshot("05_AddItem")
 
         // 返回
         app.navigationBars["添加物品"].buttons["取消"].tap()
-        sleep(1)
+        waitForScreenToSettle()
 
         // 6. 物品详情页
         let firstItem = app.staticTexts["电脑"]
         if firstItem.waitForExistence(timeout: 3) {
             firstItem.tap()
-            sleep(1)
+            XCTAssertTrue(app.buttons["itemDetailBackButton"].waitForExistence(timeout: 3))
             snapshot("06_ItemDetail")
 
             // 返回
             if app.buttons["itemDetailBackButton"].waitForExistence(timeout: 3) {
                 app.buttons["itemDetailBackButton"].tap()
-                sleep(1)
+                waitForScreenToSettle()
             }
         }
 
@@ -82,13 +86,13 @@ final class WhererUITests: XCTestCase {
         let firstSpace = app.staticTexts["卧室"]
         if firstSpace.waitForExistence(timeout: 3) {
             firstSpace.tap()
-            sleep(1)
+            waitForScreenToSettle()
             snapshot("07_SpaceDetail")
 
             // 返回
             if app.buttons["返回"].waitForExistence(timeout: 3) {
                 app.buttons["返回"].tap()
-                sleep(1)
+                waitForScreenToSettle()
             }
         }
 

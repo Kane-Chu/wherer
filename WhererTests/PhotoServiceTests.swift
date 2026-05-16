@@ -20,8 +20,15 @@ final class PhotoServiceTests: XCTestCase {
         XCTAssertNil(result, "Should return nil for invalid data")
     }
 
-    private func createTestImage(color: UIColor) -> UIImage {
-        let size = CGSize(width: 100, height: 100)
+    func testJpegDataDownscalesLargeImages() throws {
+        let image = createTestImage(color: .green, size: CGSize(width: 3000, height: 2000))
+        let data = try PhotoService.jpegData(from: image)
+        let restored = try XCTUnwrap(PhotoService.image(from: data))
+
+        XCTAssertLessThanOrEqual(max(restored.size.width, restored.size.height), 1600)
+    }
+
+    private func createTestImage(color: UIColor, size: CGSize = CGSize(width: 100, height: 100)) -> UIImage {
         let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { ctx in
             color.setFill()

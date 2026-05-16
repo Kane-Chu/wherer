@@ -1,11 +1,13 @@
 default_platform(:ios)
 
+require "json"
+
 platform :ios do
   desc "Run tests"
   lane :test do
     scan(
       scheme: "Wherer",
-      destination: "platform=iOS Simulator,name=iPhone 16",
+      destination: ENV["SCAN_DESTINATION"] || "platform=iOS Simulator,id=#{discover_test_simulator_id}",
       clean: true
     )
   end
@@ -46,6 +48,7 @@ platform :ios do
     # 1. 确保在 main 分支且没有未提交更改
     ensure_git_status_clean
     ensure_git_branch(branch: "main")
+    validate_release_state
 
     # 2. 运行测试
     test
@@ -73,10 +76,7 @@ platform :ios do
 
   desc "Generate App Store screenshots"
   lane :screenshots do
-    devices = {
-      "iPhone 16" => "230A0533-8EB5-4530-B8F9-476497764A77",
-      "iPhone 16 Pro Max" => "521635DA-DD93-43DC-BEE1-1A7A4E6E9E83"
-    }
+    devices = discover_screenshot_simulators
     output_dir = "fastlane/screenshots"
 
     # 清空旧截图
@@ -103,6 +103,63 @@ platform :ios do
     generate_screenshots_html(output_dir: output_dir)
 
     UI.success("✅ 截图已保存到 #{output_dir}/")
+  end
+
+  desc "Check build status on App Store Connect"
+  lane :check_build_status do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_filepath: File.join(Dir.pwd, ENV["APP_STORE_CONNECT_API_KEY_PATH"])
+    )
+
+    Spaceship::ConnectAPI.login(api_key: api_key)
+    app = Spaceship::ConnectAPI::App.find("com.kane.wherer")
+    builds = app.get_builds(sort: "-uploadedDate", limit: 5)
+
+    UI.message("")
+    UI.success("📦 Build 状态查询结果")
+    UI.message("-" * 50)
+
+    builds.each do |build|
+      version = build.app_version
+      build_num = build.version
+      state = build.processing_state
+      uploaded = build.uploaded_date
+
+      state_icon = case state
+                   when "VALID" then "✅"
+                   when "PROCESSING" then "⏳"
+                   when "INVALID" then "❌"
+                   else "❓"
+                   end
+
+      UI.message("#{state_icon} Build #{version} (#{build_num}) - #{state} - #{uploaded}")
+    end
+
+    UI.message("-" * 50)
+  end
+
+  desc "Upload metadata to App Store Connect"
+  lane :upload_metadata_only do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_filepath: File.join(Dir.pwd, ENV["APP_STORE_CONNECT_API_KEY_PATH"])
+    )
+
+    upload_to_app_store(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_metadata: false,
+      skip_screenshots: true,
+      force: true,
+      overwrite_screenshots: false,
+      run_precheck_before_submit: false,
+      submit_for_review: false
+    )
+
+    UI.success("✅ Metadata 已上传到 App Store Connect")
   end
 
   desc "Upload screenshots to App Store Connect"
@@ -138,6 +195,50 @@ platform :ios do
   end
 
   # ========== 私有方法 ==========
+
+  private_lane :validate_release_state do
+    version = get_version_number(xcodeproj: "Wherer.xcodeproj")
+    build_number = get_build_number(xcodeproj: "Wherer.xcodeproj")
+    root = File.expand_path("..", __dir__)
+    changelog = File.read(File.join(root, "CHANGELOG.md"))
+    readme = File.read(File.join(root, "README.md"))
+
+    UI.user_error!("MARKETING_VERSION 必须是 vX.Y.Z 对应的三段数字，当前为 #{version}") unless version.match?(/^\d+\.\d+\.\d+$/)
+    UI.user_error!("CURRENT_PROJECT_VERSION 必须是正整数，当前为 #{build_number}") unless build_number.to_s.match?(/^[1-9]\d*$/)
+    UI.user_error!("CHANGELOG.md 缺少 ## v#{version} 版本段") unless changelog.include?("## v#{version}")
+    UI.user_error!("README.md 缺少 GitHub release badge") unless readme.include?("img.shields.io/github/v/release/Kane-Chu/wherer")
+
+    tag = "v#{version}"
+    tag_exists = system("git rev-parse -q --verify refs/tags/#{tag} >/dev/null")
+    UI.user_error!("Git tag #{tag} 已存在，请先确认版本号") if tag_exists
+
+    UI.success("✅ Release metadata validated: #{version} (Build #{build_number})")
+  end
+
+  private_lane :discover_screenshot_simulators do
+    desired_names = ["iPhone 16 Pro Max", "iPhone 16", "iPhone 15 Pro Max", "iPhone 15"]
+    raw = Actions.sh("xcrun simctl list devices available --json", log: false)
+    payload = JSON.parse(raw)
+    devices = payload.fetch("devices", {}).values.flatten
+    iphones = devices.select { |device| device["isAvailable"] && device["name"].include?("iPhone") }
+
+    selected = desired_names.filter_map do |name|
+      device = iphones.find { |candidate| candidate["name"] == name }
+      [name, device["udid"]] if device
+    end.to_h
+
+    if selected.empty?
+      fallback = iphones.first
+      UI.user_error!("未找到可用 iPhone 模拟器，请先在 Xcode 安装 iOS Simulator runtime") unless fallback
+      selected[fallback["name"]] = fallback["udid"]
+    end
+
+    selected
+  end
+
+  private_lane :discover_test_simulator_id do
+    discover_screenshot_simulators.values.first
+  end
 
   private_lane :extract_screenshots do |options|
     udid = options[:udid]

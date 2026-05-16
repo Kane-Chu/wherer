@@ -71,6 +71,28 @@ final class ItemStorePhotoTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testAddItemClampsOutOfRangeCoverIndex() throws {
+        let spaceStore = SpaceStore(context: context)
+        let itemStore = ItemStore(context: context)
+        let space = spaceStore.spaces.first!
+
+        itemStore.addItem(
+            name: "封面越界测试",
+            location: "位置",
+            space: space,
+            category: .other,
+            tags: "",
+            images: [createTestImage(), createTestImage()],
+            coverIndex: 99
+        )
+
+        let item = itemStore.items.first { $0.wrappedName == "封面越界测试" }!
+        let covers = item.photoList.filter { $0.wrappedIsCover }
+        XCTAssertEqual(covers.count, 1, "Exactly one photo should be selected as cover")
+        XCTAssertEqual(covers.first, item.photoList.last, "Out-of-range cover index should use the last photo")
+    }
+
     // MARK: - deleteItem does not delete disk files for ItemPhoto
 
     @MainActor
@@ -97,6 +119,30 @@ final class ItemStorePhotoTests: XCTestCase {
         itemStore.deleteItem(item)
         XCTAssertEqual(itemStore.items.count, countBefore - 1, "Item count should decrease by 1")
         XCTAssertFalse(itemStore.items.contains { $0.wrappedName == "删除测试" }, "Deleted item should be gone")
+    }
+
+    @MainActor
+    func testDeleteItemCascadesStoredPhotos() throws {
+        let spaceStore = SpaceStore(context: context)
+        let itemStore = ItemStore(context: context)
+        let space = spaceStore.spaces.first!
+
+        itemStore.addItem(
+            name: "照片级联删除测试",
+            location: "位置",
+            space: space,
+            category: .electronics,
+            tags: "",
+            images: [createTestImage(), createTestImage()],
+            coverIndex: 0
+        )
+
+        let item = itemStore.items.first { $0.wrappedName == "照片级联删除测试" }!
+        XCTAssertEqual(try countPhotos(), 2)
+
+        itemStore.deleteItem(item)
+
+        XCTAssertEqual(try countPhotos(), 0, "Deleting an item should delete its stored ItemPhoto children")
     }
 
     // MARK: - updateItem replaces photos with imageData
@@ -147,5 +193,10 @@ final class ItemStorePhotoTests: XCTestCase {
             UIColor.blue.setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
         }
+    }
+
+    private func countPhotos() throws -> Int {
+        let request: NSFetchRequest<ItemPhoto> = ItemPhoto.fetchRequest()
+        return try context.count(for: request)
     }
 }

@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 class SpaceStore: ObservableObject {
     @Published var spaces: [Space] = []
+    @Published var lastErrorMessage: String?
     private let context: NSManagedObjectContext
 
     init(context: NSManagedObjectContext) {
@@ -45,7 +46,8 @@ class SpaceStore: ObservableObject {
                     NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
                 }
             } catch {
-                print("Failed to reset \(entityName): \(error)")
+                lastErrorMessage = "测试数据重置失败。"
+                AppLogger.error("Failed to reset \(entityName): \(error)")
             }
         }
     }
@@ -55,8 +57,10 @@ class SpaceStore: ObservableObject {
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Space.createdAt, ascending: true)]
         do {
             spaces = try context.fetch(request)
+            lastErrorMessage = nil
         } catch {
-            print("Failed to fetch spaces: \(error)")
+            lastErrorMessage = "空间读取失败，请稍后重试。"
+            AppLogger.error("Failed to fetch spaces: \(error)")
             spaces = []
         }
     }
@@ -188,8 +192,10 @@ class SpaceStore: ObservableObject {
         guard context.hasChanges else { return }
         do {
             try context.save()
+            lastErrorMessage = nil
         } catch {
-            print("Failed to save context: \(error)")
+            lastErrorMessage = "保存失败，请稍后重试。"
+            AppLogger.error("Failed to save context: \(error)")
         }
     }
 }

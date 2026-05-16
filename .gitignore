@@ -1,6 +1,8 @@
 .worktrees/
 .claude/
 .superpowers/
+.DS_Store
+**/.DS_Store
 build/
 DerivedData/
 .screenshots/

@@ -37,7 +37,7 @@ struct ContentView: View {
         }
         .accentColor(themeManager.effectiveColors.accent)
         .preferredColorScheme(themeManager.effectiveColorScheme)
-        .onChange(of: colorScheme) { newScheme in
+        .onChange(of: colorScheme) { _, newScheme in
             themeManager.systemColorScheme = newScheme
         }
     }

@@ -12,13 +12,13 @@ struct ItemDetailView: View {
     @State private var showingDeleteConfirm = false
     @State private var previewImage: PreviewImage?
 
-    private var item: Item {
-        itemStore.items.first { $0.wrappedId == itemID }!
+    private var currentItem: Item? {
+        itemStore.items.first { $0.wrappedId == itemID }
     }
 
-    private var coverImageSection: some View {
+    private func coverImageSection(for item: Item) -> some View {
         ZStack {
-            coverImageContent
+            coverImageContent(for: item)
                 .frame(height: 260)
                 .clipped()
 
@@ -34,7 +34,7 @@ struct ItemDetailView: View {
                     HStack {
                         backButton
                         Spacer()
-                        moreButton
+                        moreButton(for: item)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
@@ -67,7 +67,7 @@ struct ItemDetailView: View {
         .ignoresSafeArea(edges: .top)
     }
 
-    private var coverImageContent: some View {
+    private func coverImageContent(for item: Item) -> some View {
         Group {
             if !photos.isEmpty {
                 TabView {
@@ -115,11 +115,12 @@ struct ItemDetailView: View {
         .accessibilityIdentifier("itemDetailBackButton")
     }
 
-    private var moreButton: some View {
+    private func moreButton(for item: Item) -> some View {
         Menu {
             Button("编辑物品") {
                 showingEdit = true
             }
+            .disabled(item.wrappedSpace == nil)
             Button("删除物品", role: .destructive) {
                 showingDeleteConfirm = true
             }
@@ -133,7 +134,7 @@ struct ItemDetailView: View {
         }
     }
 
-    private var infoSection: some View {
+    private func infoSection(for item: Item) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             InfoRow(label: "空间", value: item.wrappedSpace?.wrappedName ?? "-")
             Divider()
@@ -165,20 +166,22 @@ struct ItemDetailView: View {
     }
 
     var body: some View {
-        if itemStore.items.contains(where: { $0.wrappedId == itemID }) {
+        if let item = currentItem {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    coverImageSection
-                    infoSection
+                    coverImageSection(for: item)
+                    infoSection(for: item)
                 }
             }
             .id(item.photoList.count)
             .sheet(isPresented: $showingEdit, onDismiss: {
                 photos = item.photoList
             }) {
-                ItemFormView(space: item.wrappedSpace!, item: item)
-                    .environmentObject(itemStore)
-                    .environmentObject(spaceStore)
+                if let space = item.wrappedSpace {
+                    ItemFormView(space: space, item: item)
+                        .environmentObject(itemStore)
+                        .environmentObject(spaceStore)
+                }
             }
             .alert("确认删除？", isPresented: $showingDeleteConfirm) {
                 Button("取消", role: .cancel) {}
