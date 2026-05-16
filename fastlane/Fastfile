@@ -97,12 +97,33 @@ platform :ios do
     end
 
     # 调整截图尺寸到 App Store 标准
-    resize_screenshots_for_app_store(output_dir)
+    resize_screenshots_for_app_store(output_dir: output_dir)
 
     # 生成 HTML 预览
-    generate_screenshots_html(output_dir)
+    generate_screenshots_html(output_dir: output_dir)
 
     UI.success("✅ 截图已保存到 #{output_dir}/")
+  end
+
+  desc "Upload screenshots to App Store Connect"
+  lane :upload_screenshots_only do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_filepath: File.join(Dir.pwd, ENV["APP_STORE_CONNECT_API_KEY_PATH"])
+    )
+
+    upload_to_app_store(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: false,
+      force: true,
+      overwrite_screenshots: true,
+      run_precheck_before_submit: false
+    )
+
+    UI.success("✅ 截图已上传到 App Store Connect")
   end
 
   desc "Increment build number and commit"

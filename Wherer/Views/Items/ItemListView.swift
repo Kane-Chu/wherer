@@ -17,7 +17,7 @@ struct ItemListView: View {
                     SearchBar(text: $searchQuery)
 
                     HStack {
-                        Text("全部物品")
+                        Text("物品清单")
                             .font(.title3.weight(.bold))
                         Spacer()
                         Button {
@@ -115,7 +115,7 @@ struct ItemListView: View {
                     .environment(\.defaultMinListRowHeight, 0)
                 }
             }
-            .navigationTitle("放哪了")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddItem = true }) {

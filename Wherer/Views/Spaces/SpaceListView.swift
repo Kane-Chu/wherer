@@ -134,7 +134,7 @@ struct SpaceListView: View {
                     .environment(\.defaultMinListRowHeight, 0)
                 }
             }
-            .navigationTitle("放哪了")
+            .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddSpace = true }) {
