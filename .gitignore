@@ -21,3 +21,7 @@ fastlane/derived/
 fastlane/test_output
 fastlane/.env
 fastlane/README.md
+fastlane/fastlane/
+
+# App Store Connect API Keys
+AuthKey_*.p8
